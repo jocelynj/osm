@@ -61,6 +61,7 @@ td.a95_ { color: green; }
   <th>nom</th>
 </tr>\n";
 
+$csv = "\n";
 $total_l = 0;
 $total_l_osm = 0;
 
@@ -88,6 +89,7 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   {
     $avancee=0;
     $longueur_autoroute_dans_osm='';
+    $osm_id="N/A";
     $osm_id_lien="N/A";
   }
   $total_l += $autoroute->longueur;
@@ -99,19 +101,34 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   else { $style_avancement = "a95_"; }
 
   print ("<tr>
-<td>$autoroute->ref</td>
-<td>$osm_id_lien</td>
-<td>$l_autoroute</td>
-<td>$longueur_autoroute_dans_osm</td>
-<td class=\"$style_avancement\">$avancee %</td>
-<td></td>
-<td>$autoroute->num_sections</td>
-<td>$autoroute->name</td>
+  <td>$autoroute->ref</td>
+  <td>$osm_id_lien</td>
+  <td>$l_autoroute</td>
+  <td>$longueur_autoroute_dans_osm</td>
+  <td class=\"$style_avancement\">$avancee %</td>
+  <td></td>
+  <td>$autoroute->num_sections</td>
+  <td>$autoroute->name</td>
 </tr>\n");
+  $csv .= "$autoroute->ref;$osm_id;$l_autoroute;$longueur_autoroute_dans_osm;$avancee %;$autoroute->num_sections;$autoroute->name\n";
 }
 
 $total_l = round($total_l, 1);
 $total_l_osm = round($total_l_osm, 1);
 $avancee = round($total_l_osm/$total_l * 100, 1);
-print ("<tr><td><b>Total</b></td><td></td><td>$total_l</td><td>$total_l_osm</td><td class=\"$style_avancement\">$avancee %</td></tr>\n");
-print ("</table>\n</html>");
+print "<tr>
+  <td><b>Total</b></td>
+  <td></td>
+  <td>$total_l</td>
+  <td>$total_l_osm</td>
+  <td class=\"$style_avancement\">$avancee %</td>
+</tr>\n";
+$csv .= "Total;;$total_l;$total_l_osm;$avancee %;;\n";
+
+print "</table>\n";
+
+print "<div style='display: none'>
+$csv
+</div>\n";
+print "</html>";
+
