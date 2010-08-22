@@ -5,7 +5,13 @@ PREFIX=/usr/bin/time
 
 CHANGEFILE="change-`date +%F`.osc.gz"
 
+rm -f $CHANGEFILE
 $PREFIX osmosis --read-change-interval --write-xml-change $CHANGEFILE
+
+change_size=`stat -c "%s" $CHANGEFILE`
+if [ $change_size -le 1000 ]; then
+  exit 1
+fi
 
 # The bounding box to maintain.
 LEFT=-5.5163122
