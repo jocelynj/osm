@@ -5,10 +5,13 @@ ALTER TABLE way_nodes DROP CONSTRAINT pk_way_nodes;
 ALTER TABLE relations DROP CONSTRAINT pk_relations;
 ALTER TABLE users DROP CONSTRAINT pk_users;
 DROP INDEX idx_node_tags_node_id;
+DROP INDEX idx_ways_id;
 DROP INDEX idx_way_tags_way_id;
 DROP INDEX idx_way_nodes_way_id;
 DROP INDEX idx_relation_tags_relation_id;
 DROP INDEX idx_relation_members_relation_id;
+
+DROP INDEX idx_relation_tags_k;
 
 -- truncate all tables
 TRUNCATE nodes;
@@ -22,15 +25,15 @@ TRUNCATE relation_members;
 TRUNCATE users;
 
 -- Import the table data from the data files using the fast COPY method.
-COPY nodes FROM '/home/jocelyn/gps/osm/france/change/pgimport/nodes.txt';
-COPY node_tags FROM '/home/jocelyn/gps/osm/france/change/pgimport/node_tags.txt';
-COPY ways FROM '/home/jocelyn/gps/osm/france/change/pgimport/ways.txt';
-COPY way_tags FROM '/home/jocelyn/gps/osm/france/change/pgimport/way_tags.txt';
-COPY way_nodes FROM '/home/jocelyn/gps/osm/france/change/pgimport/way_nodes.txt';
-COPY relations FROM '/home/jocelyn/gps/osm/france/change/pgimport/relations.txt';
-COPY relation_tags FROM '/home/jocelyn/gps/osm/france/change/pgimport/relation_tags.txt';
-COPY relation_members FROM '/home/jocelyn/gps/osm/france/change/pgimport/relation_members.txt';
-COPY users FROM '/home/jocelyn/gps/osm/france/change/pgimport/users.txt';
+COPY nodes FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/nodes.txt';
+COPY node_tags FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/node_tags.txt';
+COPY ways FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/ways.txt';
+COPY way_tags FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/way_tags.txt';
+COPY way_nodes FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/way_nodes.txt';
+COPY relations FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/relations.txt';
+COPY relation_tags FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/relation_tags.txt';
+COPY relation_members FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/relation_members.txt';
+COPY users FROM '/home/jocelyn/gps/osm/france/osmosis/pgimport/users.txt';
 
 -- Add the primary keys and indexes back again (except the way bbox index).
 ALTER TABLE ONLY nodes ADD CONSTRAINT pk_nodes PRIMARY KEY (id);
@@ -49,4 +52,4 @@ CREATE INDEX idx_relation_tags_k ON relation_tags USING btree (k);
 
 
 -- Perform database maintenance due to large database changes.
-VACUUM ANALYZE;
+--VACUUM ANALYZE;
