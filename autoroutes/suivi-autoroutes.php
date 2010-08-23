@@ -69,7 +69,8 @@ $query_autoroutes="
 SELECT autoroutes.ref, autoroutes.longueur,
        relation_id, km AS osm_longueur, name, num_sections
 FROM autoroutes
-LEFT JOIN osm_autoroutes ON autoroutes.ref = osm_autoroutes.ref;
+LEFT JOIN osm_autoroutes ON autoroutes.ref = osm_autoroutes.ref
+ORDER BY autoroutes.id;
 ";
 
 $res_autoroutes=pg_query($query_autoroutes);
@@ -95,7 +96,9 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   $total_l += $autoroute->longueur;
   $l_autoroute=round($autoroute->longueur,1);
 
-  if ($avancee < 50) { $style_avancement = "a0_50"; }
+  if ($l_autoroute == 0) { $style_avancement = "";
+                           $avancee = "-"; }
+  else if ($avancee < 50) { $style_avancement = "a0_50"; }
   else if ($avancee < 80) { $style_avancement = "a50_80"; }
   else if ($avancee < 95) { $style_avancement = "a80_95"; }
   else { $style_avancement = "a95_"; }
