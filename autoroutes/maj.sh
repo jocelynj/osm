@@ -15,7 +15,8 @@ JOIN relation_tags rtt ON rt1.relation_id = rtt.relation_id AND rtt.k='type' AND
 JOIN relation_tags rtr ON rt1.relation_id = rtr.relation_id AND rtr.k='route' AND
                                                                 rtr.v='road'
 JOIN relation_members ON rt1.relation_id = relation_members.relation_id AND
-                         relation_members.member_type = 'W'
+                         relation_members.member_type = 'W' AND
+                         relation_members.member_role = ''
 JOIN way_geometry ON relation_members.member_id = way_geometry.way_id
 LEFT JOIN relation_tags rtn ON rt1.relation_id = rtn.relation_id AND rtn.k='name'
 WHERE rt1.k='network' AND rt1.v='FR:A-road'
