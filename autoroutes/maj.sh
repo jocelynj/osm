@@ -29,3 +29,8 @@ SQL
 rm suivi-autoroutes.html
 wget -O suivi-autoroutes.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes.php
 cp suivi-autoroutes.html suivi-autoroutes.`grep "en date du ....-..-.." suivi-autoroutes.html | sed "s/.*en date du \(....-..-..\).*/\1/"`.html
+
+(cp suivi-autoroutes.html ~/online/site-alwaysdata-jocelyn/osm &&
+ cd ~/online/site-alwaysdata-jocelyn &&
+ ./update.sh)
+
