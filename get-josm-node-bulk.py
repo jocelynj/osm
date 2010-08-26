@@ -8,6 +8,8 @@ node_ids = []
 num = 0
 
 def download(node_ids):
+  if len(node_ids) == 0:
+    return
   url = "http://api.openstreetmap.org/api/0.6/nodes?nodes=%s" % ",".join(node_ids)
   webFile = urllib2.urlopen(url)
   localFile = open("/home/jocelyn/public_html/temp-nodes.osm", 'w')

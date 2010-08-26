@@ -8,6 +8,8 @@ way_ids = []
 num = 0
 
 def download(way_ids):
+  if len(way_ids) == 0:
+    return
   url = "http://api.openstreetmap.org/api/0.6/ways?ways=%s" % ",".join(way_ids)
   webFile = urllib2.urlopen(url)
   localFile = open("/home/jocelyn/public_html/temp-ways.osm", 'w')
