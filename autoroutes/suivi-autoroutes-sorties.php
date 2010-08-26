@@ -86,7 +86,7 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   $nodes = explode('-', $autoroute->nodes_id);
   for($i = 1; $i<count($nodes); $i++) {
     $osm_id = $nodes[$i];
-    print ("<td><a href='http://www.openstreetmap.org/browse/node/$osm_id'>$osm_id</a>&nbsp;<a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/node/$osm_id/full' target='suivi-josm'>josm</a></td>");
+    print ("<td><a href='http://www.openstreetmap.org/browse/node/$osm_id'>$osm_id</a>&nbsp;<a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/node/$osm_id' target='suivi-josm'>josm</a></td>");
     if ($i % 5 == 0) {
       print ("</tr><tr>");
     }
