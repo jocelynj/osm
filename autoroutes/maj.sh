@@ -25,7 +25,7 @@ GROUP BY rt1.relation_id, rt2.v, rtn.v;
 ALTER TABLE osm_autoroutes OWNER TO osm;
 
 
-DROP TABLE osm_autoroutes_sorties
+DROP TABLE osm_autoroutes_sorties;
 CREATE TABLE osm_autoroutes_sorties
 AS
 SELECT autoroutes.id, 
@@ -42,8 +42,7 @@ JOIN way_nodes ON relation_members.member_id = way_nodes.way_id
 JOIN node_tags ON way_nodes.node_id = node_tags.node_id AND node_tags.k = 'highway'
 LEFT JOIN node_tags nt2 ON node_tags.node_id = nt2.node_id AND nt2.k = 'ref'
 LEFT JOIN node_tags nt3 ON node_tags.node_id = nt3.node_id AND nt3.k = 'name'
-GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref, nt3.v, nt2.v
-ORDER BY autoroutes.id, int4(regexp_replace(nt2.v, '^([0-9]*).*', E'0\\1'));
+GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref, nt3.v, nt2.v;
 
 ALTER TABLE osm_autoroutes_sorties OWNER TO osm;
 
