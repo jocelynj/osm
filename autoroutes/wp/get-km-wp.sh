@@ -42,6 +42,7 @@ UPDATE autoroutes SET longueur=9   WHERE ref='A 6b' AND longueur=0;
 UPDATE autoroutes SET longueur=74  WHERE id=86  AND longueur=0;
 UPDATE autoroutes SET longueur=5.5 WHERE id=106;
 UPDATE autoroutes SET longueur=7   WHERE id=126;
+UPDATE autoroutes SET longueur=34  WHERE id=630;
 UPDATE autoroutes SET longueur=8   WHERE id=680;
 
 -- depuis ASF
