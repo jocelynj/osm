@@ -18,6 +18,10 @@ if (!$c=pg_connect("dbname=osm host=localhost user=osm password=osm"))
 $date=exec('cat /home/jocelyn/gps/osm/france/osmosis/timestamp.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
 
 print "<html>
+<head>
+  <title>Sorties d'autoroute en date du $date</title>
+</head>
+<body>
 <style type=\"text/css\">
 <!--
 td.a0_50 { color: red; }
@@ -26,7 +30,7 @@ td.a50_80 { color: orange; }
 td.a95_ { color: green; }
 -->
 </style>
-<p>Etat d'avancement des sorties des autoroutes en date du $date</p>
+<h2>Etat d'avancement des sorties des autoroutes en date du $date</h2>
 <table border='1'>
 <tr>
   <th colspan=2>Relation</th>
@@ -97,5 +101,6 @@ while($autoroute=pg_fetch_object($res_autoroutes))
 }
 
 print "</table>\n";
+print "</body>";
 print "</html>";
 

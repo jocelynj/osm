@@ -31,6 +31,10 @@ if (!$c=pg_connect("dbname=osm host=localhost user=osm password=osm"))
 $date=exec('cat /home/jocelyn/gps/osm/france/osmosis/timestamp.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
 
 print "<html>
+<head>
+  <title>Autoroutes en date du $date</title>
+</head>
+<body>
 <style type=\"text/css\">
 <!--
 td.a0_50 { color: red; }
@@ -39,7 +43,7 @@ td.a50_80 { color: orange; }
 td.a95_ { color: green; }
 -->
 </style>
-<p>Etat d'avancement du tracé des autoroutes en date du $date</p>
+<h2>Etat d'avancement du tracé des autoroutes en date du $date</h2>
 <p>A noter que les kilométrages de référence sont prises sur Wikipédia, et ne contiennent pas toutes les autoroutes</p>
 <p>Les relations prises en compte contiennent les tags suivants: type=route route=road network=FR:A-road</p>
 <table border='1'>
@@ -134,5 +138,6 @@ print "</table>\n";
 print "<div style='display: none'>
 $csv
 </div>\n";
+print "</body>";
 print "</html>";
 

@@ -50,7 +50,9 @@ SQL
 
 rm suivi-autoroutes.html
 wget -O suivi-autoroutes.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes.php
-cp suivi-autoroutes.html suivi-autoroutes.`grep "en date du ....-..-.." suivi-autoroutes.html | sed "s/.*en date du \(....-..-..\).*/\1/"`.html
+cp suivi-autoroutes.html suivi-autoroutes.`grep "en date du ....-..-.." suivi-autoroutes.html |
+                                           head -1 |
+                                           sed "s/.*en date du \(....-..-..\).*/\1/"`.html
 
 rm suivi-autoroutes-sorties.html
 wget -O suivi-autoroutes-sorties.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes-sorties.php
