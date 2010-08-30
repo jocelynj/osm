@@ -30,7 +30,7 @@ CREATE TABLE osm_autoroutes_sorties
 AS
 SELECT autoroutes.id, 
        osm_autoroutes.relation_id, osm_autoroutes.ref AS relation_ref,
-       nt2.v AS ref, nt3.v AS name,
+       nt2.v AS ref, nt3.v AS name, nt4.v AS exit_to,
        concat(node_tags.node_id) AS nodes_id,
        COUNT(*) AS total
 FROM osm_autoroutes
@@ -42,7 +42,8 @@ JOIN way_nodes ON relation_members.member_id = way_nodes.way_id
 JOIN node_tags ON way_nodes.node_id = node_tags.node_id AND node_tags.k = 'highway'
 LEFT JOIN node_tags nt2 ON node_tags.node_id = nt2.node_id AND nt2.k = 'ref'
 LEFT JOIN node_tags nt3 ON node_tags.node_id = nt3.node_id AND nt3.k = 'name'
-GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref, nt3.v, nt2.v;
+LEFT JOIN node_tags nt4 ON node_tags.node_id = nt4.node_id AND nt4.k = 'exit_to'
+GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref, nt3.v, nt2.v, nt4.v;
 
 ALTER TABLE osm_autoroutes_sorties OWNER TO osm;
 

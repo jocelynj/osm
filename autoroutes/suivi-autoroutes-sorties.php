@@ -49,7 +49,7 @@ $csv = "\n";
 
 $query_autoroutes="
 SELECT relation_id, relation_ref,
-       ref, name,
+       ref, name, exit_to,
        total, nodes_id
 FROM osm_autoroutes_sorties
 ORDER BY id, int4(regexp_replace(ref, '^([0-9]*).*', E'0\\\\1')), name
@@ -76,12 +76,16 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   <td></td>
 ");
   }
-  print ("<td>$autoroute->ref</td>
-  <td>$autoroute->name</td>
-  <td>$autoroute->total</td>
-");
+  print "  <td>$autoroute->ref</td>\n";
+  if ($autoroute->exit_to) {
+    $exit_to = "<p><b>exit_to:</b> $autoroute->exit_to</p>";
+  } else {
+    $exit_to = "";
+  }
+  print "  <td>$autoroute->name $exit_to</td>\n";
+  print "  <td>$autoroute->total</td>\n";
 
-  if ($autoroute->ref == "" && $autoroute->name == "") {
+  if ($autoroute->ref == "" && $autoroute->name == "" && $autoroute->exit_to == "") {
     print ("<td><table style='background: orange;'><tr>");
   } else {
     print ("<td><table><tr>");
