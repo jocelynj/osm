@@ -47,6 +47,31 @@ GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref, nt3.v, n
 
 ALTER TABLE osm_autoroutes_sorties OWNER TO osm;
 
+DROP TABLE osm_autoroutes_aires;
+CREATE TABLE osm_autoroutes_aires
+AS
+SELECT autoroutes.id,
+       osm_autoroutes.relation_id, osm_autoroutes.ref AS relation_ref,
+       nt2.v AS name, nodes.id AS node_id,
+       node_tags.v AS highway,
+       int4(MIN(ST_Distance(st_transform(nodes.geom,2154),
+                            st_transform(way_geometry.geom,2154)))) AS distance
+FROM osm_autoroutes
+JOIN autoroutes ON osm_autoroutes.ref = autoroutes.ref
+JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_id AND
+                         relation_members.member_type = 'W' AND
+                         relation_members.member_role = ''
+JOIN way_geometry ON way_geometry.way_id = relation_members.member_id
+JOIN nodes ON ST_Distance(st_transform(nodes.geom,2154),
+                          st_transform(way_geometry.geom,2154)) < 1000
+JOIN node_tags ON nodes.id = node_tags.node_id AND node_tags.k = 'highway' AND
+                        (v = 'services' OR v = 'rest_area')
+LEFT JOIN node_tags nt2 ON nodes.id = nt2.node_id AND nt2.k = 'name'
+GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref,
+         nodes.id, nt2.v, node_tags.v;
+
+ALTER TABLE osm_autoroutes_aires OWNER TO osm;
+
 SQL
 
 rm suivi-autoroutes.html
@@ -58,8 +83,12 @@ cp suivi-autoroutes.html suivi-autoroutes.`grep "en date du ....-..-.." suivi-au
 rm suivi-autoroutes-sorties.html
 wget -O suivi-autoroutes-sorties.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes-sorties.php
 
+rm suivi-autoroutes-aires.html
+wget -O suivi-autoroutes-aires.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes-aires.php
+
 (cp suivi-autoroutes.html ~/online/site-alwaysdata-jocelyn/osm &&
  cp suivi-autoroutes-sorties.html ~/online/site-alwaysdata-jocelyn/osm &&
+ cp suivi-autoroutes-aires.html ~/online/site-alwaysdata-jocelyn/osm &&
  cd ~/online/site-alwaysdata-jocelyn &&
  ./update.sh)
 
