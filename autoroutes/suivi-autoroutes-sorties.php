@@ -28,9 +28,12 @@ td.a0_50 { color: red; }
 td.a50_80 { color: orange; }
 /* normal color for 80-95 */
 td.a95_ { color: green; }
+.orange { background: orange; }
 -->
 </style>
 <h2>Etat d'avancement des sorties des autoroutes en date du $date</h2>
+<p>Liste des nodes qui contiennent un tag highway et qui sont sur l'autoroute concernée.</p>
+<p>Les nodes en <span class='orange'>orange</span> sont les nodes qui n'ont pas un des tags parmi <b>ref</b>, <b>name</b> ou <b>exit_to</b>.</p>
 <table border='1'>
 <tr>
   <th colspan=2>Relation</th>
@@ -68,7 +71,7 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     $prev_autoroute = $autoroute->relation_ref;
     print ("<tr>
   <td>$osm_id_lien</td>
-  <td>$autoroute->relation_ref</td>
+  <td><a name='$autoroute->relation_ref'>$autoroute->relation_ref</a></td>
 ");
   } else {
     print ("<tr>
@@ -86,7 +89,7 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   print "  <td>$autoroute->total</td>\n";
 
   if ($autoroute->ref == "" && $autoroute->name == "" && $autoroute->exit_to == "") {
-    print ("<td><table style='background: orange;'><tr>");
+    print ("<td><table class='orange'><tr>");
   } else {
     print ("<td><table><tr>");
   }
