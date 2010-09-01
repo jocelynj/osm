@@ -41,28 +41,33 @@ td.a0_50 { color: red; }
 td.a50_80 { color: orange; }
 /* normal color for 80-95 */
 td.a95_ { color: green; }
+td.big { background: orange; }
 -->
 </style>
 <h2>Etat d'avancement du tracé des autoroutes en date du $date</h2>
-<p>A noter que les kilométrages de référence sont prises sur Wikipédia, et ne contiennent pas toutes les autoroutes</p>
+<p>A noter que les kilométrages de référence sont prises sur Wikipédia et sur WikiSara, et ne contiennent pas toutes les autoroutes</p>
 <p>Les relations prises en compte contiennent les tags suivants: type=route route=road network=FR:A-road</p>
 <table border='1'>
 <tr>
   <th></th>
-  <th></th>
   <th colspan=3>Longueur</th>
   <th></th>
-  <th colspan=2>Infos dans OSM</th>
+  <th colspan=3>Infos dans OSM</th>
+  <th colspan=4>km d'oneway dans OSM</th>
 </tr>
 <tr>
   <th>Autoroute</th>
-  <th>id_osm</th>
-  <th>wp</th>
+  <th>wiki</th>
   <th>osm</th>
   <th>ratio</th>
   <th></th>
+  <th>id_osm</th>
   <th>sections</th>
   <th>nom</th>
+  <th>yes</th>
+  <th>no</th>
+  <th>(null)</th>
+  <th>\"somme\"</th>
 </tr>\n";
 
 $csv = "\n";
@@ -71,7 +76,8 @@ $total_l_osm = 0;
 
 $query_autoroutes="
 SELECT autoroutes.ref, autoroutes.longueur,
-       relation_id, km AS osm_longueur, name, num_sections
+       relation_id, km AS osm_longueur, name, num_sections,
+       km_oneway_yes, km_oneway_no, km_oneway_null
 FROM autoroutes
 LEFT JOIN osm_autoroutes ON autoroutes.ref = osm_autoroutes.ref
 ORDER BY autoroutes.id, autoroutes.ref;
@@ -88,7 +94,13 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     $osm_id=$autoroute->relation_id;
     $osm_id_lien="<a href='http://www.openstreetmap.org/browse/relation/$osm_id'>$osm_id</a>
     <a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/relation/$osm_id/full' target='suivi-josm'>josm</a>";
-
+    if ($autoroute->km_oneway_yes) { $km_oneway_yes = round($autoroute->km_oneway_yes,1); }
+    else { $km_oneway_yes = ""; }
+    if ($autoroute->km_oneway_no) { $km_oneway_no = round($autoroute->km_oneway_no,1); }
+    else { $km_oneway_no = ""; }
+    if ($autoroute->km_oneway_null) { $km_oneway_null = round($autoroute->km_oneway_null,1); }
+    else { $km_oneway_null = ""; }
+    $km_oneway_sum = round($autoroute->km_oneway_no + $autoroute->km_oneway_null + $autoroute->km_oneway_yes/2, 1);
   }
   else
   {
@@ -96,6 +108,10 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     $longueur_autoroute_dans_osm='';
     $osm_id="N/A";
     $osm_id_lien="N/A";
+    $km_oneway_yes = "";
+    $km_oneway_no = "";
+    $km_oneway_null = "";
+    $km_oneway_sum = "";
   }
   $total_l += $autoroute->longueur;
   $l_autoroute=round($autoroute->longueur,1);
@@ -106,17 +122,24 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   else if ($avancee < 50) { $style_avancement = "a0_50"; }
   else if ($avancee < 80) { $style_avancement = "a50_80"; }
   else if ($avancee < 95) { $style_avancement = "a80_95"; }
+  else if ($avancee > 105 && ($longueur_autoroute_dans_osm - $l_autoroute) > 15) {
+    $style_avancement = "big";
+  }
   else { $style_avancement = "a95_"; }
 
   print ("<tr>
   <td>$autoroute->ref</td>
-  <td>$osm_id_lien</td>
   <td>$l_autoroute</td>
   <td>$longueur_autoroute_dans_osm</td>
   <td class=\"$style_avancement\">$avancee %</td>
   <td></td>
+  <td>$osm_id_lien</td>
   <td>$autoroute->num_sections</td>
   <td>$autoroute->name</td>
+  <td>$km_oneway_yes</td>
+  <td>$km_oneway_no</td>
+  <td>$km_oneway_null</td>
+  <td>$km_oneway_sum</td>
 </tr>\n");
   $csv .= "$autoroute->ref;$osm_id;$l_autoroute;$longueur_autoroute_dans_osm;$avancee %;$autoroute->num_sections;$autoroute->name\n";
 }
@@ -124,9 +147,16 @@ while($autoroute=pg_fetch_object($res_autoroutes))
 $total_l = round($total_l, 1);
 $total_l_osm = round($total_l_osm, 1);
 $avancee = round($total_l_osm/$total_l * 100, 1);
+
+if ($avancee < 50) { $style_avancement = "a0_50"; }
+else if ($avancee < 80) { $style_avancement = "a50_80"; }
+else if ($avancee < 95) { $style_avancement = "a80_95"; }
+else if (($avancee > 110) and (($total_l_osm - $total_l) > 15)) { $style_avancement = "big"; }
+else { $style_avancement = "a95_"; }
+
+
 print "<tr>
   <td><b>Total</b></td>
-  <td></td>
   <td>$total_l</td>
   <td>$total_l_osm</td>
   <td class=\"$style_avancement\">$avancee %</td>

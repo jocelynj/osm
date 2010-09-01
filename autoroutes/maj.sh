@@ -4,10 +4,14 @@ psql osm << SQL
 DROP TABLE osm_autoroutes;
 CREATE TABLE osm_autoroutes
 AS
-SELECT rt1.relation_id AS relation_id, COUNT(way_id) AS num_way,
+SELECT rt1.relation_id AS relation_id, COUNT(way_geometry.way_id) AS num_way,
        rt2.v AS ref, rtn.v AS name,
        st_numgeometries(st_linemerge(st_union(st_transform(geom,2154)))) AS num_sections,
-       SUM(st_length(st_transform(geom,2154))) / 1000 / 2 as km
+       SUM(st_length(st_transform(geom,2154))) / 1000 / 2 as km,
+       SUM(st_length(st_transform((CASE WHEN way_tags.v='yes' THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_yes,
+       SUM(st_length(st_transform((CASE WHEN way_tags.v='no' THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_no,
+       SUM(st_length(st_transform((CASE WHEN way_tags.v IS NULL THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_null
+
 FROM relation_tags rt1
 JOIN relation_tags rt2 ON rt1.relation_id = rt2.relation_id AND rt2.k='ref'
 JOIN relation_tags rtt ON rt1.relation_id = rtt.relation_id AND rtt.k='type' AND
@@ -18,6 +22,7 @@ JOIN relation_members ON rt1.relation_id = relation_members.relation_id AND
                          relation_members.member_type = 'W' AND
                          relation_members.member_role = ''
 JOIN way_geometry ON relation_members.member_id = way_geometry.way_id
+LEFT JOIN way_tags ON way_tags.way_id = way_geometry.way_id AND way_tags.k = 'oneway'
 LEFT JOIN relation_tags rtn ON rt1.relation_id = rtn.relation_id AND rtn.k='name'
 WHERE rt1.k='network' AND rt1.v='FR:A-road'
 GROUP BY rt1.relation_id, rt2.v, rtn.v;
@@ -28,7 +33,7 @@ ALTER TABLE osm_autoroutes OWNER TO osm;
 DROP TABLE osm_autoroutes_sorties;
 CREATE TABLE osm_autoroutes_sorties
 AS
-SELECT autoroutes.id, 
+SELECT autoroutes.id,
        osm_autoroutes.relation_id, osm_autoroutes.ref AS relation_ref,
        nt2.v AS ref, nt3.v AS name, nt4.v AS exit_to,
        concat(node_tags.node_id) AS nodes_id,
