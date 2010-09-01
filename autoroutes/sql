@@ -2,8 +2,8 @@ CREATE TABLE osm_autoroutes
 AS
 SELECT rt1.relation_id AS relation_id, COUNT(way_id) AS num_way,
        rt2.v AS ref, rtn.v AS name,
-       st_numgeometries(st_linemerge(st_union(st_transform(geom,2154)))) AS num_sections,
-       SUM(st_length(st_transform(geom,2154))) / 1000 / 2 as km
+--       SUM(st_length(st_transform(geom,2154))) / 1000 / 2 as km
+       node_tags.v
 FROM relation_tags rt1
 JOIN relation_tags rt2 ON rt1.relation_id = rt2.relation_id AND rt2.k='ref'
 JOIN relation_tags rtt ON rt1.relation_id = rtt.relation_id AND rtt.k='type' AND
@@ -11,19 +11,68 @@ JOIN relation_tags rtt ON rt1.relation_id = rtt.relation_id AND rtt.k='type' AND
 JOIN relation_tags rtr ON rt1.relation_id = rtr.relation_id AND rtr.k='route' AND
                                                                 rtr.v='road'
 JOIN relation_members ON rt1.relation_id = relation_members.relation_id AND
-                         relation_members.member_type = 'W'
-JOIN way_geometry ON relation_members.member_id = way_geometry.way_id
+                         relation_members.member_type = 'W' AND
+                         relation_members.member_role = ''
+JOIN way_nodes ON relation_members.member_id = way_nodes.way_id
+JOIN node_tags ON way_nodes.node_id = node_tags.node_id AND node_tags.k = 'highway'
 LEFT JOIN relation_tags rtn ON rt1.relation_id = rtn.relation_id AND rtn.k='name'
 WHERE rt1.k='network' AND rt1.v='FR:A-road'
-GROUP BY rt1.relation_id, rt2.v, rtn.v;
+GROUP BY rt1.relation_id, rt2.v, rtn.v, node_tags.v;
 
-SELECT autoroutes.ref, autoroutes.longueur, relation_id, km AS osm_longueur
-FROM autoroutes
-LEFT JOIN osm_autoroutes ON autoroutes.ref = osm_autoroutes.ref;
+CREATE FUNCTION concat(text, bigint) RETURNS text AS $$
+    SELECT $1 || '-' || text($2);
+$$ LANGUAGE SQL;
 
-SELECT rt1.relation_id, rt1.k, rt1.v, rt2.k, rt2.v
-FROM relation_tags rt1
-LEFT JOIN osm_autoroutes ON v = osm_autoroutes.ref
-LEFT JOIN relation_tags rt2 ON rt1.relation_id = rt2.relation_id AND rt2.k='network'
-WHERE rt1.k='ref' AND rt1.v LIKE 'A%' AND osm_autoroutes.ref IS NULL AND
-      rt2.v is null;
+
+CREATE AGGREGATE concat (
+    sfunc = concat,
+    basetype = bigint,
+    stype = text,
+    initcond = '0'
+);
+
+
+CREATE TABLE osm_autoroutes_sorties
+AS
+SELECT autoroutes.id,
+       osm_autoroutes.relation_id, osm_autoroutes.ref AS relation_ref,
+       nt2.v AS ref, nt3.v AS name,
+       concat(node_tags.node_id) AS nodes_id,
+       COUNT(*) AS total
+FROM osm_autoroutes
+JOIN autoroutes ON osm_autoroutes.ref = autoroutes.ref
+JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_id AND
+                         relation_members.member_type = 'W' AND
+                         relation_members.member_role = ''
+JOIN way_nodes ON relation_members.member_id = way_nodes.way_id
+JOIN node_tags ON way_nodes.node_id = node_tags.node_id AND node_tags.k = 'highway'
+LEFT JOIN node_tags nt2 ON node_tags.node_id = nt2.node_id AND nt2.k = 'ref'
+LEFT JOIN node_tags nt3 ON node_tags.node_id = nt3.node_id AND nt3.k = 'name'
+GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref, nt3.v, nt2.v
+ORDER BY autoroutes.id, int4(regexp_replace(nt2.v, '^([0-9]*).*', E'0\\1'));
+
+
+SELECT osm_autoroutes.ref, nt2.v AS name, nodes.id,
+       int4(MIN(ST_Distance(st_transform(nodes.geom,2154),
+                            st_transform(way_geometry.geom,2154)))) AS distance
+FROM osm_autoroutes
+JOIN autoroutes ON osm_autoroutes.ref = autoroutes.ref
+JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_id AND
+                         relation_members.member_type = 'W' AND
+                         relation_members.member_role = ''
+JOIN way_geometry ON way_geometry.way_id = relation_members.member_id
+JOIN nodes ON ST_Distance(st_transform(nodes.geom,2154),
+                          st_transform(way_geometry.geom,2154)) < 1000
+JOIN node_tags ON nodes.id = node_tags.node_id AND node_tags.k = 'highway' AND v = 'services'
+LEFT JOIN node_tags nt2 ON nodes.id = nt2.node_id AND nt2.k = 'name'
+GROUP BY autoroutes.id, osm_autoroutes.ref, nodes.id, nt2.v
+ORDER BY autoroutes.id, nt2.v, nodes.id;
+
+
+SELECT node_tags.*, ST_Distance(st_transform(nodes.geom,2154),
+                                st_transform(way_geometry.geom,2154))
+FROM node_tags
+JOIN way_geometry ON way_geometry.way_id = 71379793
+JOIN nodes ON nodes.id = node_tags.node_id
+WHERE node_tags.k = 'highway' AND v = 'services';
+
