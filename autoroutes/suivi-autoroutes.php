@@ -94,6 +94,8 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     $osm_id=$autoroute->relation_id;
     $osm_id_lien="<a href='http://www.openstreetmap.org/browse/relation/$osm_id'>$osm_id</a>
     <a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/relation/$osm_id/full' target='suivi-josm'>josm</a>";
+    if ($autoroute->num_sections) { $num_sections = $autoroute->num_sections; }
+    else { $num_sections = 1; }
     if ($autoroute->km_oneway_yes) { $km_oneway_yes = round($autoroute->km_oneway_yes,1); }
     else { $km_oneway_yes = ""; }
     if ($autoroute->km_oneway_no) { $km_oneway_no = round($autoroute->km_oneway_no,1); }
@@ -108,6 +110,7 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     $longueur_autoroute_dans_osm='';
     $osm_id="N/A";
     $osm_id_lien="N/A";
+    $num_sections = "";
     $km_oneway_yes = "";
     $km_oneway_no = "";
     $km_oneway_null = "";
@@ -134,14 +137,14 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   <td class=\"$style_avancement\">$avancee %</td>
   <td></td>
   <td>$osm_id_lien</td>
-  <td>$autoroute->num_sections</td>
+  <td>$num_sections</td>
   <td>$autoroute->name</td>
   <td>$km_oneway_yes</td>
   <td>$km_oneway_no</td>
   <td>$km_oneway_null</td>
   <td>$km_oneway_sum</td>
 </tr>\n");
-  $csv .= "$autoroute->ref;$osm_id;$l_autoroute;$longueur_autoroute_dans_osm;$avancee %;$autoroute->num_sections;$autoroute->name\n";
+  $csv .= "$autoroute->ref;$osm_id;$l_autoroute;$longueur_autoroute_dans_osm;$avancee %;$num_sections;$autoroute->name\n";
 }
 
 $total_l = round($total_l, 1);
