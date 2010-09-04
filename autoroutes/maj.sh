@@ -5,7 +5,10 @@ DROP TABLE osm_autoroutes;
 CREATE TABLE osm_autoroutes
 AS
 SELECT rt1.relation_id AS relation_id, COUNT(way_geometry.way_id) AS num_way,
-       rt2.v AS ref, rtn.v AS name,
+       (CASE WHEN rt1.v='FR:A-road' THEN rt2.v
+             WHEN rt1.v='Boulevard Périphérique de Paris' THEN 'BP'
+        END) AS ref,
+       rtn.v AS name,
        st_numgeometries(st_linemerge(st_union(st_transform(geom,2154)))) AS num_sections,
        SUM(st_length(st_transform(geom,2154))) / 1000 / 2 as km,
        SUM(st_length(st_transform((CASE WHEN way_tags.v='yes' THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_yes,
@@ -13,7 +16,7 @@ SELECT rt1.relation_id AS relation_id, COUNT(way_geometry.way_id) AS num_way,
        SUM(st_length(st_transform((CASE WHEN way_tags.v IS NULL THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_null
 
 FROM relation_tags rt1
-JOIN relation_tags rt2 ON rt1.relation_id = rt2.relation_id AND rt2.k='ref'
+LEFT JOIN relation_tags rt2 ON rt1.relation_id = rt2.relation_id AND rt2.k='ref'
 JOIN relation_tags rtt ON rt1.relation_id = rtt.relation_id AND rtt.k='type' AND
                                                                 rtt.v='route'
 JOIN relation_tags rtr ON rt1.relation_id = rtr.relation_id AND rtr.k='route' AND
@@ -24,8 +27,9 @@ JOIN relation_members ON rt1.relation_id = relation_members.relation_id AND
 JOIN way_geometry ON relation_members.member_id = way_geometry.way_id
 LEFT JOIN way_tags ON way_tags.way_id = way_geometry.way_id AND way_tags.k = 'oneway'
 LEFT JOIN relation_tags rtn ON rt1.relation_id = rtn.relation_id AND rtn.k='name'
-WHERE rt1.k='network' AND rt1.v='FR:A-road'
-GROUP BY rt1.relation_id, rt2.v, rtn.v;
+WHERE (rt1.k='network' AND rt1.v='FR:A-road' AND rt2.v IS NOT NULL OR
+       rt1.k='name' AND rt1.v='Boulevard Périphérique de Paris')
+GROUP BY rt1.relation_id, rt2.v, rtn.v, rt1.v;
 
 ALTER TABLE osm_autoroutes OWNER TO osm;
 

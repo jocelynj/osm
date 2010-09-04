@@ -66,5 +66,8 @@ UPDATE autoroutes SET longueur=19  WHERE id=620 AND longueur=0;
 
 -- depuis ASF
 UPDATE autoroutes SET longueur=33  WHERE id=837 AND longueur=0;
+
+-- BP de paris
+INSERT INTO autoroutes VALUES (0, 'BP', 35.5);
 PSQL
 

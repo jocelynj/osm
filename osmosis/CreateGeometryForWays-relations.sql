@@ -33,7 +33,7 @@ FROM
 WHERE
 	ways.id = member_id AND member_type = 'W' AND
         relation_members.relation_id = relation_tags.relation_id AND
-        ((relation_tags.k = 'network' AND relation_tags.v = 'FR:A-road') OR
+        ((relation_tags.k = 'type' AND relation_tags.v = 'route') OR
          relation_tags.k = 'waterway')
 GROUP BY ways.id
 ;
