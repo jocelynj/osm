@@ -23,7 +23,7 @@ UPDATE autoroutes SET longueur=3   WHERE id=139 AND longueur=0;
 UPDATE autoroutes SET longueur=9   WHERE id=140 AND longueur=0;
 UPDATE autoroutes SET longueur=3.5 WHERE id=211;
 UPDATE autoroutes SET longueur=4.5 WHERE id=391;
-UPDATE autoroutes SET longueur=6.5 WHERE id=410;
+UPDATE autoroutes SET longueur=12.5 WHERE id=480;
 UPDATE autoroutes SET longueur=1.5 WHERE id=502 AND longueur=0;
 UPDATE autoroutes SET longueur=0.9 WHERE id=515 AND longueur=0;
 UPDATE autoroutes SET longueur=0.9 WHERE id=516 AND longueur=0;
@@ -33,14 +33,18 @@ UPDATE autoroutes SET longueur=0.5 WHERE id=623 AND longueur=0;
 UPDATE autoroutes SET longueur=4   WHERE id=624 AND longueur=0;
 UPDATE autoroutes SET longueur=5   WHERE id=645 AND longueur=0;
 UPDATE autoroutes SET longueur=21  WHERE id=660 AND longueur=0;
-UPDATE autoroutes SET longueur=7   WHERE id=710;
 UPDATE autoroutes SET longueur=1   WHERE id=712;
 UPDATE autoroutes SET longueur=9.6 WHERE id=714;
 
 -- non construites
 DELETE FROM autoroutes WHERE id=112;
+DELETE FROM autoroutes WHERE id=260;
+DELETE FROM autoroutes WHERE id=406;
+DELETE FROM autoroutes WHERE id=507;
 -- déclassées
+DELETE FROM autoroutes WHERE id=401;
 DELETE FROM autoroutes WHERE id=701;
+DELETE FROM autoroutes WHERE id=710;
 DELETE FROM autoroutes WHERE id=821;
 
 
@@ -56,8 +60,16 @@ UPDATE autoroutes SET longueur=74  WHERE id=86  AND longueur=0;
 UPDATE autoroutes SET longueur=9   WHERE id=105;
 UPDATE autoroutes SET longueur=5.5 WHERE id=106;
 UPDATE autoroutes SET longueur=7   WHERE id=126;
+UPDATE autoroutes SET longueur=2   WHERE id=186;
+UPDATE autoroutes SET longueur=2.5 WHERE id=314;
+UPDATE autoroutes SET longueur=3   WHERE id=315;
+UPDATE autoroutes SET longueur=7   WHERE id=352;
+UPDATE autoroutes SET longueur=21  WHERE id=404;
+UPDATE autoroutes SET longueur=25  WHERE id=410;
+UPDATE autoroutes SET longueur=2   WHERE id=411;
 UPDATE autoroutes SET longueur=4   WHERE id=501 AND longueur=0;
 UPDATE autoroutes SET longueur=3   WHERE id=520 AND longueur=0;
+UPDATE autoroutes SET longueur=1.5 WHERE id=557;
 UPDATE autoroutes SET longueur=7   WHERE id=570 AND longueur=0;
 UPDATE autoroutes SET longueur=19  WHERE id=620 AND longueur=0;
 UPDATE autoroutes SET longueur=34  WHERE id=630;
