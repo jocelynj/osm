@@ -1,0 +1,23 @@
+#! /bin/bash
+
+pgsql2shp -f france-coastline-line.shp osm "
+SELECT way_id, way_geom(way_id) AS geom
+FROM way_tags
+WHERE k = 'natural' AND v='coastline' AND
+      ST_GeometryType(way_geom(way_id)) = 'ST_LineString' AND
+      ST_NumPoints(way_geom(way_id)) > 2;
+"
+
+pgsql2shp -f france-coastline-polygon.shp osm "
+SELECT way_id, way_geom(way_id) AS geom
+FROM way_tags
+WHERE k = 'natural' AND v='coastline' AND
+      ST_GeometryType(way_geometry.geom) = 'ST_Polygon';
+"
+
+rm france-coastline.shp
+ogr2ogr france-coastline.shp france-coastline-line.shp
+ogr2ogr -update -append france-coastline.shp france-coastline-polygon.shp -nln france-coastline
+
+./create_tif.py france-coastline.shp france-coastline.tif
+gdal_rasterize -b 1 -b 2 -b 3 -burn 200 -burn 200 -burn 255 -l france-coastline france-coastline.shp france-coastline.tif
