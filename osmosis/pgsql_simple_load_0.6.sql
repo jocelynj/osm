@@ -12,6 +12,7 @@ DROP INDEX idx_relation_tags_relation_id;
 DROP INDEX idx_relation_members_relation_id;
 
 DROP INDEX idx_relation_tags_k;
+DROP INDEX idx_way_tags_k;
 
 -- truncate all tables
 TRUNCATE nodes;
@@ -49,6 +50,7 @@ CREATE INDEX idx_relation_tags_relation_id ON relation_tags USING btree (relatio
 CREATE INDEX idx_relation_members_relation_id ON relation_members USING btree (relation_id);
 
 CREATE INDEX idx_relation_tags_k ON relation_tags USING btree (k);
+CREATE INDEX idx_way_tags_k ON way_tags USING btree (k);
 
 
 -- Perform database maintenance due to large database changes.
