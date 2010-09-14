@@ -73,6 +73,7 @@ td.big { background: orange; }
 $csv = "\n";
 $total_l = 0;
 $total_l_osm = 0;
+$prev_ref = "";
 
 $query_autoroutes="
 SELECT autoroutes.ref, autoroutes.longueur,
@@ -116,8 +117,10 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     $km_oneway_null = "";
     $km_oneway_sum = "";
   }
-  $total_l += $autoroute->longueur;
-  $l_autoroute=round($autoroute->longueur,1);
+  if ($prev_ref != $autoroute->ref) {
+    $total_l += $autoroute->longueur;
+    $l_autoroute=round($autoroute->longueur,1);
+  }
 
   if ($l_autoroute == 0) { $l_autoroute = "";
                            $style_avancement = "";
@@ -130,20 +133,26 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   }
   else { $style_avancement = "a95_"; }
 
-  print ("<tr>
-  <td>$autoroute->ref</td>
-  <td>$l_autoroute</td>
-  <td>$longueur_autoroute_dans_osm</td>
-  <td class=\"$style_avancement\">$avancee %</td>
-  <td></td>
-  <td>$osm_id_lien</td>
-  <td>$num_sections</td>
-  <td>$autoroute->name</td>
-  <td>$km_oneway_yes</td>
-  <td>$km_oneway_no</td>
-  <td>$km_oneway_null</td>
-  <td>$km_oneway_sum</td>
-</tr>\n");
+  print "<tr>\n";
+  if ($prev_ref != $autoroute->ref) {
+    $prev_ref = $autoroute->ref;
+    print "  <td>$autoroute->ref</td>\n";
+    print "  <td>$l_autoroute</td>\n";
+  } else {
+    print "  <td></td>\n";
+    print "  <td></td>\n";
+  }
+  print "  <td>$longueur_autoroute_dans_osm</td>\n";
+  print "  <td class=\"$style_avancement\">$avancee %</td>\n";
+  print "  <td></td>\n";
+  print "  <td>$osm_id_lien</td>\n";
+  print "  <td>$num_sections</td>\n";
+  print "  <td>$autoroute->name</td>\n";
+  print "  <td>$km_oneway_yes</td>\n";
+  print "  <td>$km_oneway_no</td>\n";
+  print "  <td>$km_oneway_null</td>\n";
+  print "  <td>$km_oneway_sum</td>\n";
+  print "</tr>\n";
   $csv .= "$autoroute->ref;$osm_id;$l_autoroute;$longueur_autoroute_dans_osm;$avancee %;$num_sections;$autoroute->name\n";
 }
 
