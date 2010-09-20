@@ -4,7 +4,7 @@ set -e
 
 date
 
-(cd osmosis && ./update-pgsql.sh && psql osm < CreateGeometryForWays-relations.sql) || exit
+(cd osmosis && ./update-pgsql.sh) || exit
 
 date
 
