@@ -5,7 +5,6 @@ ALTER TABLE way_nodes DROP CONSTRAINT pk_way_nodes;
 ALTER TABLE relations DROP CONSTRAINT pk_relations;
 ALTER TABLE users DROP CONSTRAINT pk_users;
 DROP INDEX idx_node_tags_node_id;
-DROP INDEX idx_ways_id;
 DROP INDEX idx_way_tags_way_id;
 DROP INDEX idx_way_nodes_way_id;
 DROP INDEX idx_relation_tags_relation_id;
@@ -43,7 +42,6 @@ ALTER TABLE ONLY way_nodes ADD CONSTRAINT pk_way_nodes PRIMARY KEY (way_id, sequ
 ALTER TABLE ONLY relations ADD CONSTRAINT pk_relations PRIMARY KEY (id);
 ALTER TABLE ONLY users ADD CONSTRAINT pk_users PRIMARY KEY (id);
 CREATE INDEX idx_node_tags_node_id ON node_tags USING btree (node_id);
-CREATE INDEX idx_ways_id ON ways USING btree (id);
 CREATE INDEX idx_way_tags_way_id ON way_tags USING btree (way_id);
 CREATE INDEX idx_way_nodes_way_id ON way_nodes USING btree (way_id);
 CREATE INDEX idx_relation_tags_relation_id ON relation_tags USING btree (relation_id);
