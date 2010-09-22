@@ -133,14 +133,18 @@ while($affluent=pg_fetch_object($res_affluents)) {
           print "  <td>\n";
         }
         $prev_river[$i] = $osm_id;
-        print $affluent->{"name$i"};
+        $name = $affluent->{"name$i"};
+        if (is_null($name)) {
+          $name = "-";
+        }
+        print $name;
+        print "  </td>\n";
+        print "  <td>\n";
         if ($affluent->{"type$i"} == ord('R')) {
           $type = "relation";
         } else {
           $type = "way";
         }
-        print "  </td>\n";
-        print "  <td>\n";
         $osm_id_lien = osm_link($type, $osm_id);
         print "$osm_id_lien $type";
         print "  </td>\n";
