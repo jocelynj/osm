@@ -4,7 +4,7 @@ set -e
 
 date
 
-(cd osmosis && ./update-pgsql.sh) || exit
+(cd osmosis-hourly && ./maj.sh) || exit
 
 echo ""
 date

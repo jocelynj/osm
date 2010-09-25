@@ -15,7 +15,7 @@ else
 if (!$c=pg_connect("dbname=osm host=localhost user=osm password=osm"))
   die("Erreur connexion SQL");
 
-$date=exec('cat /home/jocelyn/gps/osm/france/osmosis/timestamp.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
+$date=exec('cat /home/jocelyn/gps/osm/france/osmosis-hourly/state.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
 
 function osm_link($type, $osm_id) {
   return "<a href='http://www.openstreetmap.org/browse/$type/$osm_id'>$osm_id</a>

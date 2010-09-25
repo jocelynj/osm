@@ -28,7 +28,7 @@ else
 if (!$c=pg_connect("dbname=osm host=localhost user=osm password=osm"))
   die("Erreur connexion SQL");
 
-$date=exec('cat /home/jocelyn/gps/osm/france/osmosis/timestamp.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
+$date=exec('cat /home/jocelyn/gps/osm/france/osmosis-hourly/state.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
 
 print "<html>
 <head>
