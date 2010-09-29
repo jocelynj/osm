@@ -21,6 +21,9 @@ function osm_link($type, $osm_id) {
   return "<a href='http://www.openstreetmap.org/browse/$type/$osm_id'>$osm_id</a>
           <a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/$type/$osm_id/full' target='suivi-josm'>josm</a>";
 }
+function sandre_link($sandre) {
+  return "  <a href='http://sandre.eaufrance.fr/app/chainage/courdo/htm/$sandre.php'>$sandre</a>\n";
+}
 
 
 print "<html>
@@ -111,6 +114,7 @@ print "<table class='liste'>\n";
 print "<tr>\n";
 print "  <th>Rivière</th>\n";
 print "  <th>osm id</th>\n";
+print "  <th>sandre</th>\n";
 print "  <th>waterway</th>\n";
 print "  <th>Intersection (way id)</th>\n";
 print "</tr>\n";
@@ -147,6 +151,10 @@ while($affluent=pg_fetch_object($res_affluents)) {
         }
         $osm_id_lien = osm_link($type, $osm_id);
         print "$osm_id_lien $type";
+        print "  </td>\n";
+        print "  <td>\n";
+        $sandre = $affluent->{"sandre$i"};
+        print sandre_link($sandre);
         print "  </td>\n";
         print "  <td>\n";
         $waterway = $affluent->{"waterway$i"};
@@ -268,7 +276,9 @@ while($affluent=pg_fetch_object($res_affluents)) {
   $osm_id_lien="<a href='http://www.openstreetmap.org/browse/relation/$osm_id'>$osm_id</a>&nbsp;<a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/relation/$osm_id/full' target='suivi-josm'>josm</a>";
 
   print "  <td>$osm_id_lien</td>\n";
-  print "  <td><a href='http://sandre.eaufrance.fr/app/chainage/courdo/htm/$sandre.php'>$sandre</a></td>\n";
+  print "  <td>";
+  print sandre_link($sandre);
+  print "</td>\n";
   print "  <td>$affluent->waterway</td>\n";
   print "</tr>\n";
 }
