@@ -166,7 +166,39 @@ while($affluent=pg_fetch_object($res_affluents)) {
           $osm_id_lien_b = osm_link("way", $affluent->{"wayb$i"});
           print "$osm_id_lien_a $osm_id_lien_b";
         } else if ($i > 1) {
-          print "pas d'intersection trouvée";
+          if ($affluent->{"type$i"} == ord('R')) {
+            print "pas d'intersection trouvée";
+
+          } else {
+            $rela = $prev_river[$i-1];
+            $wayb = $osm_id;
+            $query_croisement = "
+SELECT wg.way_id AS waya, wg2.way_id AS wayb
+FROM relation_members rm
+JOIN way_geometry wg ON wg.way_id = rm.member_id
+JOIN way_nodes wn1 ON wn1.way_id = wg.way_id AND
+                      wn1.sequence_id = (SELECT MAX(sequence_id) FROM way_nodes
+                                         WHERE way_nodes.way_id = wg.way_id)
+
+JOIN way_geometry wg2 ON ST_Intersects(wg.geom, wg2.geom)
+JOIN way_nodes wn2 ON wn2.way_id = wg2.way_id AND
+                      wn2.sequence_id = (SELECT MAX(sequence_id) FROM way_nodes
+                                         WHERE way_nodes.way_id = wg2.way_id)
+
+WHERE rm.member_type = 'W' AND rm.member_role != 'tributary' AND
+      rm.relation_id = $rela AND wg2.way_id = $wayb AND
+      wn1.node_id != wn2.node_id
+";
+            $res_croisement=pg_query($query_croisement);
+            if($croisement=pg_fetch_object($res_croisement)) {
+              $osm_id_lien_a = osm_link("way", $croisement->{"waya"});
+              $osm_id_lien_b = osm_link("way", $croisement->{"wayb"});
+              print "$osm_id_lien_a $osm_id_lien_b";
+            } else {
+              print "pas d'intersection trouvée";
+            }
+            pg_free_result($res_croisement);
+          }
         }
 
         if ($i == 1) {
@@ -186,6 +218,7 @@ while($affluent=pg_fetch_object($res_affluents)) {
   print "  </td>\n";
   print "</tr>\n";
 }
+pg_free_result($res_affluents);
 print "</table>\n";
 
 print "<h2>Connexions entre rivières sans affluent spécifié dans une relation</h2>\n";
@@ -238,7 +271,7 @@ while($affluent=pg_fetch_object($res_affluents)) {
 
   print "</tr>\n";
 }
-
+pg_free_result($res_affluents);
 print "</table>";
 
 
@@ -282,7 +315,7 @@ while($affluent=pg_fetch_object($res_affluents)) {
   print "  <td>$affluent->waterway</td>\n";
   print "</tr>\n";
 }
-
+pg_free_result($res_affluents);
 print "</table>";
 
 print "</body>";
