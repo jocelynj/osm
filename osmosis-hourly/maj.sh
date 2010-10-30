@@ -14,5 +14,10 @@ echo "*** Insert data in postgresql"
 $OSMOSIS --read-xml-change $CHANGEFILE --write-pgsql-change password=osm
 
 echo ""
+echo "*** Clean database"
+$PREFIX psql osm < clean-bdd.sql
+
+echo ""
 echo "*** Update table way_geometry"
 $PREFIX psql osm < UpdateGeometryForWays.sql
+
