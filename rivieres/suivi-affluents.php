@@ -283,9 +283,11 @@ FROM relation_tags rt
 LEFT JOIN relation_tags rtn ON rt.relation_id = rtn.relation_id AND rtn.k = 'name'
 LEFT JOIN relation_tags rts ON rt.relation_id = rts.relation_id AND rts.k = 'ref:sandre'
 LEFT JOIN relation_tags rtw ON rt.relation_id = rtw.relation_id AND rtw.k = 'waterway'
-LEFT JOIN rivers_tributary ON rt.relation_id = ANY(rivers) 
+LEFT JOIN rivers_tributary ON rt.relation_id = ANY(rivers[2:1000])
+LEFT JOIN rivers_coastline_intersections inter ON rt.relation_id = inter.id1
 WHERE rt.k = 'type' AND rt.v = 'waterway' AND depth IS NULL AND
-      NOT rtw.v = 'canal' AND NOT rtw.v = 'riverbank'
+      NOT rtw.v = 'canal' AND NOT rtw.v = 'riverbank' AND
+      inter.way2 IS NULL
 ORDER BY rtn.v
 ";
 
