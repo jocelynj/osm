@@ -27,6 +27,25 @@ JOIN way_nodes wn2 ON wn2.way_id = wg2.way_id AND
 WHERE rt.k = 'type' AND rt.v = 'waterway' AND wn1.node_id != wn2.node_id;
 ALTER TABLE rivers_intersections OWNER to osm;
 
+
+DROP TABLE rivers_coastline_intersections;
+CREATE TABLE rivers_coastline_intersections
+AS
+SELECT DISTINCT ON (rt.relation_id)
+       rt.relation_id AS id1,   rtn.v AS name1,  wg.way_id AS way1,
+       wg2.way_id AS way2
+FROM relation_tags rt
+LEFT JOIN relation_tags rtn ON rt.relation_id = rtn.relation_id AND rtn.k = 'name'
+JOIN relation_members rm ON rm.relation_id = rt.relation_id AND rm.member_type = 'W' AND
+                            rm.member_role != 'waterbank'
+JOIN way_geometry wg ON wg.way_id = rm.member_id
+
+JOIN way_tags wtn2 ON wtn2.k = 'natural' AND wtn2.v = 'coastline'
+JOIN way_geometry wg2 ON wg2.way_id = wtn2.way_id AND ST_Intersects(wg.geom, wg2.geom)
+
+WHERE rt.k = 'type' AND rt.v = 'waterway';
+ALTER TABLE rivers_coastline_intersections OWNER to osm;
+
 SQL
 
 rm suivi-affluents.html
