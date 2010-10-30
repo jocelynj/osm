@@ -1,6 +1,8 @@
 #! /bin/sh
 
-psql osm << SQL
+. ../config
+
+$PREFIX psql "$DATABASE" << SQL
 DROP TABLE rivers_intersections;
 CREATE TABLE rivers_intersections
 AS

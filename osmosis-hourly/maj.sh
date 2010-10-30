@@ -1,23 +1,22 @@
 #! /bin/bash
 
-PREFIX=/usr/bin/time
-OSMOSIS="$PREFIX osmosis -q"
+. ../config
 
-CHANGEFILE="change-`date +%F-%R`.osc.gz"
+CHANGEFILE="$WORKDIR/change-`date +%F-%R`.osc.gz"
 
 echo ""
 echo "*** Get changes from server"
-$OSMOSIS --read-replication-interval --simplify-change --write-xml-change $CHANGEFILE
+$OSMOSIS --read-replication-interval workingDirectory="$WORKDIR" --simplify-change --write-xml-change "$CHANGEFILE"
 
 echo ""
 echo "*** Insert data in postgresql"
-$OSMOSIS --read-xml-change $CHANGEFILE --write-pgsql-change password=osm
+$OSMOSIS --read-xml-change "$CHANGEFILE" --write-pgsql-change database="$DATABASE" user="$USER" password="$PASS"
 
 echo ""
 echo "*** Clean database"
-$PREFIX psql osm < clean-bdd.sql
+$PREFIX psql "$DATABASE" < clean-bdd.sql
 
 echo ""
 echo "*** Update table way_geometry"
-$PREFIX psql osm < UpdateGeometryForWays.sql
+$PREFIX psql "$DATABASE" < UpdateGeometryForWays.sql
 

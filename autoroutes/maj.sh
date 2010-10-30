@@ -1,6 +1,8 @@
 #! /bin/sh
 
-psql osm << SQL
+. ../config
+
+psql "$DATABASE" << SQL
 DROP TABLE osm_autoroutes;
 CREATE TABLE osm_autoroutes
 AS

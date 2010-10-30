@@ -1,5 +1,7 @@
 #! /bin/sh
 
+. ../config
+
 for i in `cat liste | sort -n -t"A" -k2`; do
   id=`echo $i | sed "s/A\([0-9]*\).*/\1/"`
   ref=`echo $i | sed "s/A\([0-9]*.*\)/A \1/"`
@@ -10,7 +12,7 @@ for i in `cat liste | sort -n -t"A" -k2`; do
   echo "$id;$ref;$km"
 done > km-autoroutes
 
-psql osm << PSQL
+psql "$DATABASE" << PSQL
 TRUNCATE autoroutes;
 \\copy autoroutes from 'km-autoroutes' with delimiter as ';'
 -- corrections
