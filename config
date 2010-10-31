@@ -1,12 +1,13 @@
 #! /bin/bash
 
-WORKDIR="/home/jocelyn/tmp/osmosis"
+WORKDIR="/data/work/osmosis/"
 
 # postgresql database
-DATABASE="osm"
-USER="osm"
-PASS="osm"
+DATABASE="osmosis"
+USER="osmosis"
+PASS="osmosis"
 
 # programs
 PREFIX=/usr/bin/time
 OSMOSIS="$PREFIX osmosis -q"
+OSMOSIS_DIR="/data/project/osmosis/osmosis-0.37/"
