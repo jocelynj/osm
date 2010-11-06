@@ -2,10 +2,10 @@
 
 . ./draw-functions.sh
 
-get_line_shp france-border.shp "wt1.k = 'admin_level' AND wt1.v='2'" \
-                               "wt2.k = 'maritime'" "wt2.v IS NULL"
+get_line_shp border.shp "tags->'admin_level' = '2'" \
+                        "NOT tags ? 'maritime'"
 
-./create_tif.py france-coastline.shp france-border.tif
-draw_shp france-border.tif france-border.shp 200 200 0
-draw_shp france-border.tif france-coastline.shp 200 200 255
+./create_tif.py coastline.shp border.tif
+draw_shp border.tif border.shp 200 200 0
+draw_shp border.tif coastline.shp 200 200 255
 

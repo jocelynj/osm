@@ -1,13 +1,16 @@
 #! /bin/bash
 
+# paths
+OSMOSIS_DIR="/data/project/osmosis/osmosis-0.37/"
 WORKDIR="/data/work/osmosis/"
+export JAVACMD_OPTIONS="-Djava.io.tmpdir=/data/work/osmosis/tmp/"
 
 # postgresql database
 DATABASE="osmosis"
 USER="osmosis"
 PASS="osmosis"
+BOUNDING_BOX="all"
 
 # programs
 PREFIX=/usr/bin/time
-OSMOSIS="$PREFIX osmosis -q"
-OSMOSIS_DIR="/data/project/osmosis/osmosis-0.37/"
+OSMOSIS="$PREFIX $OSMOSIS_DIR/bin/osmosis -q"

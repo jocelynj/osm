@@ -34,6 +34,7 @@ src_extent = src_lyr.GetExtent()
 # Alternative A: Calculate pixel resolution from desired dataset dimensions
 x_res = (src_extent[1] - src_extent[0]) / tiff_width
 y_res = (src_extent[3] - src_extent[2]) / tiff_height
+y_res = x_res / 1.5
 # Alternative B: Calculate raster dataset dimensions from desired pixel resolution
 tiff_width = int(math.ceil(abs(src_extent[1] - src_extent[0]) / x_res)) + 2 * margin
 tiff_height = int(math.ceil(abs(src_extent[3] - src_extent[2]) / y_res)) + 2 * margin

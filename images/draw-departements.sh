@@ -2,16 +2,14 @@
 
 . ./draw-functions.sh
 
-get_line_shp france-region.shp "wt1.k = 'admin_level' AND wt1.v='4'" \
-                               "wt2.k = 'maritime'" "wt2.v IS NULL"
-get_line_shp france-departement.shp "wt1.k = 'admin_level' AND wt1.v='6'" \
-                                    "wt2.k = 'maritime'" "wt2.v IS NULL"
+get_line_shp admin_4.shp "tags->'admin_level' = '4' AND NOT tags ? 'maritime'"
+get_line_shp admin_6.shp "tags->'admin_level' = '6' AND NOT tags ? 'maritime'"
 
-./create_tif.py france-coastline.shp france-departement.tif
+./create_tif.py coastline.shp admin_6.tif
 
-draw_shp france-departement.tif france-departement.shp 250 210 100
-draw_shp france-departement.tif france-region.shp 220 20 90
-draw_shp france-departement.tif france-border.shp 200 200 0
-draw_shp france-departement.tif france-coastline.shp 200 200 255
+draw_shp admin_6.tif admin_6.shp 250 210 100
+draw_shp admin_6.tif admin_4.shp 220 20 90
+draw_shp admin_6.tif border.shp 200 200 0
+draw_shp admin_6.tif coastline.shp 200 200 255
 
 

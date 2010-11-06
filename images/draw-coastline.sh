@@ -2,7 +2,7 @@
 
 . ./draw-functions.sh
 
-get_line_shp france-coastline.shp "k = 'natural' AND v='coastline'"
+get_line_shp coastline.shp "tags->'natural' = 'coastline'"
 
-./create_tif.py france-coastline.shp france-coastline.tif
-draw_shp france-coastline.tif france-coastline.shp 200 200 255
+./create_tif.py coastline.shp coastline.tif
+draw_shp coastline.tif coastline.shp 200 200 255
