@@ -2,7 +2,7 @@
 
 . ../config
 
-bbox_list="france_metro haiti guadeloupe"
+bbox_list="france_metro haiti guadeloupe guyane martinique reunion"
 
 function get_line_shp {
   # $1 is the target file
@@ -46,7 +46,4 @@ function draw_shp {
   layer=`echo "$2" | sed "s/.shp$//"`
   gdal_rasterize -b 1 -b 2 -b 3 -burn "$3" -burn "$4" -burn "$5" \
                  -l "$layer" "$2" "$1"
-  png=`echo $1 | sed "s/.tif$/.png/"`
-  convert $1 $png
-
 }
