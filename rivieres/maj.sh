@@ -50,13 +50,4 @@ ALTER TABLE rivers_coastline_intersections OWNER to osm;
 
 SQL
 
-rm suivi-affluents.html
-wget -O suivi-affluents.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-affluents.php
-cp suivi-affluents.html suivi-affluents.`grep "en date du ....-..-.." suivi-affluents.html |
-                                         head -1 |
-                                         sed "s/.*en date du \(....-..-..\).*/\1/"`.html
-
-(cp suivi-affluents.html ~/online/site-alwaysdata-jocelyn/osm &&
- cd ~/online/site-alwaysdata-jocelyn &&
- ./update.sh)
-
+php suivi-affluents.php > $WORKDIR/suivi/suivi-affluents.html

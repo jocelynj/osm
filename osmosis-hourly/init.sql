@@ -1,11 +1,10 @@
-CREATE OR REPLACE FUNCTION clean_bdd_ways(zone string) RETURNS integer AS
+CREATE OR REPLACE FUNCTION clean_bdd_ways_simple(zone text, l integer) RETURNS integer AS
 $BODY$
 DECLARE
   bbox geometry;
-  rel_removed integer;
+  num integer;
 BEGIN
-
-  bbox := SELECT geom FROM bounding_box WHERE name = zone;
+  SELECT INTO bbox geom FROM bounding_box WHERE name = zone;
 
   DROP TABLE IF EXISTS ways_to_remove;
   CREATE TABLE
@@ -13,7 +12,51 @@ BEGIN
   AS
   SELECT id
   FROM ways
-  WHERE NOT ST_Contains(bbox, ways.bbox);
+  WHERE ST_Disjoint(bbox, ways.bbox)
+  LIMIT l;
+  
+  DELETE
+  FROM ways
+  USING ways_to_remove
+  WHERE ways_to_remove.id = ways.id;
+  
+  DELETE
+  FROM way_nodes
+  USING ways_to_remove
+  WHERE ways_to_remove.id = way_nodes.way_id;
+
+   -- relations
+  DELETE
+  FROM relation_members
+  USING ways_to_remove
+  WHERE relation_members.member_type = 'W' AND relation_members.member_id = ways_to_remove.id;
+ 
+  SELECT INTO num count(*) FROM ways_to_remove;
+  RETURN num;
+END
+$BODY$
+LANGUAGE 'plpgsql' ;
+
+
+CREATE OR REPLACE FUNCTION clean_bdd_ways(zone text, l integer) RETURNS integer AS
+$BODY$
+DECLARE
+  bbox geometry;
+  rel_removed integer;
+  rel_removed2 integer;
+BEGIN
+
+--  bbox := SELECT geom FROM bounding_box WHERE name = zone;
+  SELECT INTO bbox geom FROM bounding_box WHERE name = zone;
+
+  DROP TABLE IF EXISTS ways_to_remove;
+  CREATE TABLE
+  ways_to_remove
+  AS
+  SELECT id
+  FROM ways
+  WHERE ST_Disjoint(bbox, ways.bbox)
+  LIMIT l;
   
   DELETE
   FROM ways
@@ -34,7 +77,8 @@ BEGIN
   FROM ways
   LEFT JOIN way_nodes ON ways.id = way_nodes.way_id
   LEFT JOIN nodes ON nodes.id = way_nodes.node_id
-  WHERE nodes.id IS NULL;
+  WHERE nodes.id IS NULL
+  LIMIT l;
   
   DELETE
   FROM ways
@@ -58,7 +102,9 @@ BEGIN
   WHERE relation_members.member_type = 'W' AND relation_members.member_id = ways_to_remove2.id;
   
   rel_removed := 1;
-  WHILE rel_removed > 0 LOOP
+  rel_removed2 := 1;
+  WHILE rel_removed > 0 OR rel_removed2 > 0 LOOP
+    RAISE NOTICE 'cleaning relation';
   
     DROP TABLE IF EXISTS relations_to_remove;
     CREATE TABLE
@@ -93,8 +139,8 @@ BEGIN
           relation_members_clean.member_id   = relation_members.member_id AND
           relation_members_clean.member_type = relation_members.member_type;
   
-    rel_removed := SELECT count(*) FROM relations_to_remove LIMIT 1 +
-                   SELECT count(*) FROM relation_members_clean LIMIT 1;
+    SELECT INTO rel_removed  count(*) FROM relations_to_remove LIMIT 1;
+    SELECT INTO rel_removed2 count(*) FROM relation_members_clean LIMIT 1;
   END LOOP;
   RETURN 1;
 END
@@ -102,13 +148,14 @@ $BODY$
 LANGUAGE 'plpgsql' ;
 
 
-CREATE OR REPLACE FUNCTION clean_bdd_nodes(zone string) RETURNS integer AS
+CREATE OR REPLACE FUNCTION clean_bdd_nodes(zone text, l integer) RETURNS integer AS
 $BODY$
 DECLARE
   bbox geometry;
+  num integer;
 BEGIN
 
-  bbox := SELECT geom FROM bounding_box WHERE name = zone;
+  SELECT INTO bbox geom FROM bounding_box WHERE name = zone;
 
   -- nodes
   DROP TABLE IF EXISTS nodes_to_remove;
@@ -117,7 +164,8 @@ BEGIN
   AS
   SELECT id
   FROM nodes
-  WHERE NOT ST_Contains(bbox, geom);
+  WHERE ST_Disjoint(bbox, geom)
+  LIMIT l;
   
   DELETE
   FROM nodes
@@ -129,8 +177,15 @@ BEGIN
   FROM way_nodes
   USING nodes_to_remove
   WHERE node_id = nodes_to_remove.id;
+
+  -- relations
+  DELETE
+  FROM relation_members
+  USING ways_to_remove
+  WHERE relation_members.member_type = 'N' AND relation_members.member_id = nodes_to_remove.id;
   
-  RETURN 1;
+  SELECT INTO num count(*) FROM nodes_to_remove;
+  RETURN num;
 END
 $BODY$
 LANGUAGE 'plpgsql' ;

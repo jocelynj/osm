@@ -5,16 +5,16 @@ exit 0
 
 . ../config
 
-createuser osmosis
-createdb osmosis
-createlang plpgsql osmosis
+createuser $USER
+createdb $USER
+createlang plpgsql $USER
 
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/hstore.sql
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/postgis-1.5/postgis.sql
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/postgis-1.5/spatial_ref_sys.sql
-psql -U postgres "$DATABASE" -c "ALTER TABLE spatial_ref_sys OWNER TO osmosis"
-psql -U postgres "$DATABASE" -c "ALTER TABLE geography_columns OWNER TO osmosis"
-psql -U postgres "$DATABASE" -c "ALTER TABLE geometry_columns OWNER TO osmosis"
+psql -U postgres "$DATABASE" -c "ALTER TABLE spatial_ref_sys OWNER TO $USER"
+psql -U postgres "$DATABASE" -c "ALTER TABLE geography_columns OWNER TO $USER"
+psql -U postgres "$DATABASE" -c "ALTER TABLE geometry_columns OWNER TO $USER"
 
 psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsql_simple_schema_0.6.sql"
 psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsql_simple_schema_0.6_bbox.sql"
