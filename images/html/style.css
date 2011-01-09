@@ -1,0 +1,11 @@
+/* Affichage des images */
+div.affiche_image  {
+  float: left;
+  text-align: center;
+  margin: 1px;
+  border: solid;
+}
+body.tout div.affiche_image {
+  width: 500px;
+  height: 530px;
+}
