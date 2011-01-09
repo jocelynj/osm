@@ -9,6 +9,7 @@ if [ "x$1" = "x" ]; then
   exit 1
 else
   bbox="$1"
+  cd $WORKDIR/images
 fi
 
 if [ "x$2" = "x" ]; then
@@ -19,7 +20,7 @@ type=$2
 
 img=$bbox/$type.tif
 
-./create_tif.py bbox-$bbox.shp $img
+create_tif.py bbox-$bbox.shp $img
 
 case "$type" in
   "coastline")

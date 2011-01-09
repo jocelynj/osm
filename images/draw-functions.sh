@@ -2,7 +2,11 @@
 
 . ../config
 
-bbox_list="france_metro haiti guadeloupe guyane martinique reunion"
+#bbox_list="france_metro haiti guadeloupe guyane martinique reunion"
+#bbox_list="guadeloupe guyane martinique reunion mayotte saint-barthelemy saint-pierre-et-miquelon polynesie-francaise wallis-et-futuna"
+bbox_list=`psql "$DATABASE" -t -c "select name from bounding_box;"`
+
+export PATH=$PATH:`pwd`
 
 function get_line_shp {
   # $1 is the target file
