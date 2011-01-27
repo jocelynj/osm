@@ -6,34 +6,27 @@ psql "$DATABASE" << SQL
 DROP TABLE osm_autoroutes;
 CREATE TABLE osm_autoroutes
 AS
-SELECT rt1.relation_id AS relation_id, COUNT(way_geometry.way_id) AS num_way,
-       (CASE WHEN rt1.v='FR:A-road' THEN rt2.v
-             WHEN rt1.v='Boulevard Périphérique de Paris' THEN 'BP'
+SELECT rt.id AS relation_id, COUNT(w.id) AS num_way,
+       (CASE WHEN rt.tags->'network' = 'FR:A-road' THEN rt.tags->'ref'
+             WHEN rt.tags->'name' = 'Boulevard Périphérique de Paris' THEN 'BP'
         END) AS ref,
-       rtn.v AS name,
-       st_numgeometries(st_linemerge(st_union(st_transform(geom,2154)))) AS num_sections,
-       SUM(st_length(st_transform(geom,2154))) / 1000 / 2 as km,
-       SUM(st_length(st_transform((CASE WHEN way_tags.v='yes' THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_yes,
-       SUM(st_length(st_transform((CASE WHEN way_tags.v='no' THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_no,
-       SUM(st_length(st_transform((CASE WHEN way_tags.v IS NULL THEN geom ELSE NULL END),2154))) / 1000 as km_oneway_null
+       rt.tags->'name' AS name,
+       st_numgeometries(st_linemerge(st_union(st_transform(linestring,2154)))) AS num_sections,
+       SUM(st_length(st_transform(linestring,2154))) / 1000 / 2 as km,
+       SUM(st_length(st_transform((CASE WHEN w.tags->'oneway'='yes' THEN linestring ELSE NULL END),2154))) / 1000 as km_oneway_yes,
+       SUM(st_length(st_transform((CASE WHEN w.tags->'oneway'='no' THEN linestring ELSE NULL END),2154))) / 1000 as km_oneway_no,
+       SUM(st_length(st_transform((CASE WHEN NOT w.tags ? 'oneway' THEN linestring ELSE NULL END),2154))) / 1000 as km_oneway_null
 
-FROM relation_tags rt1
-LEFT JOIN relation_tags rt2 ON rt1.relation_id = rt2.relation_id AND rt2.k='ref'
-JOIN relation_tags rtt ON rt1.relation_id = rtt.relation_id AND rtt.k='type' AND
-                                                                rtt.v='route'
-JOIN relation_tags rtr ON rt1.relation_id = rtr.relation_id AND rtr.k='route' AND
-                                                                rtr.v='road'
-JOIN relation_members ON rt1.relation_id = relation_members.relation_id AND
+FROM relations rt
+JOIN relation_members ON rt.id = relation_members.relation_id AND
                          relation_members.member_type = 'W' AND
                          relation_members.member_role = ''
-JOIN way_geometry ON relation_members.member_id = way_geometry.way_id
-LEFT JOIN way_tags ON way_tags.way_id = way_geometry.way_id AND way_tags.k = 'oneway'
-LEFT JOIN relation_tags rtn ON rt1.relation_id = rtn.relation_id AND rtn.k='name'
-WHERE (rt1.k='network' AND rt1.v='FR:A-road' AND rt2.v IS NOT NULL OR
-       rt1.k='name' AND rt1.v='Boulevard Périphérique de Paris')
-GROUP BY rt1.relation_id, rt2.v, rtn.v, rt1.v;
+JOIN ways w ON relation_members.member_id = w.id
 
-ALTER TABLE osm_autoroutes OWNER TO osm;
+WHERE rt.tags->'type' = 'route' AND rt.tags->'route' = 'road' AND
+      (rt.tags->'network' = 'FR:A-road' AND rt.tags ? 'ref' OR
+       rt.tags->'name' = 'Boulevard Périphérique de Paris')
+GROUP BY rt.id, rt.tags->'name', rt.tags->'network', rt.tags->'name', rt.tags->'ref';
 
 
 DROP TABLE osm_autoroutes_sorties;
@@ -41,8 +34,8 @@ CREATE TABLE osm_autoroutes_sorties
 AS
 SELECT autoroutes.id,
        osm_autoroutes.relation_id, osm_autoroutes.ref AS relation_ref,
-       nt2.v AS ref, nt3.v AS name, nt4.v AS exit_to,
-       concat(node_tags.node_id) AS nodes_id,
+       nodes.tags->'ref' AS ref, nodes.tags->'name' AS name, nodes.tags->'exit_to' AS exit_to,
+       concat(nodes.id) AS nodes_id,
        COUNT(*) AS total
 FROM osm_autoroutes
 JOIN autoroutes ON osm_autoroutes.ref = autoroutes.ref
@@ -50,56 +43,33 @@ JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_
                          relation_members.member_type = 'W' AND
                          relation_members.member_role = ''
 JOIN way_nodes ON relation_members.member_id = way_nodes.way_id
-JOIN node_tags ON way_nodes.node_id = node_tags.node_id AND node_tags.k = 'highway'
-LEFT JOIN node_tags nt2 ON node_tags.node_id = nt2.node_id AND nt2.k = 'ref'
-LEFT JOIN node_tags nt3 ON node_tags.node_id = nt3.node_id AND nt3.k = 'name'
-LEFT JOIN node_tags nt4 ON node_tags.node_id = nt4.node_id AND nt4.k = 'exit_to'
-GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref, nt3.v, nt2.v, nt4.v;
-
-ALTER TABLE osm_autoroutes_sorties OWNER TO osm;
+JOIN nodes ON way_nodes.node_id = nodes.id
+WHERE nodes.tags ? 'highway'
+GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref,
+          nodes.tags->'ref', nodes.tags->'name', nodes.tags->'exit_to';
 
 DROP TABLE osm_autoroutes_aires;
 CREATE TABLE osm_autoroutes_aires
 AS
 SELECT autoroutes.id,
        osm_autoroutes.relation_id, osm_autoroutes.ref AS relation_ref,
-       nt2.v AS name, nodes.id AS node_id,
-       node_tags.v AS highway,
+       nodes.tags->'name' AS name, nodes.id AS node_id,
+       nodes.tags->'highway' AS highway,
        int4(MIN(ST_Distance(st_transform(nodes.geom,2154),
-                            st_transform(way_geometry.geom,2154)))) AS distance
+                            st_transform(linestring,2154)))) AS distance
 FROM osm_autoroutes
 JOIN autoroutes ON osm_autoroutes.ref = autoroutes.ref
 JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_id AND
                          relation_members.member_type = 'W' AND
                          relation_members.member_role = ''
-JOIN way_geometry ON way_geometry.way_id = relation_members.member_id
+JOIN ways ON ways.id = relation_members.member_id
 JOIN nodes ON ST_Distance(st_transform(nodes.geom,2154),
-                          st_transform(way_geometry.geom,2154)) < 1000
-JOIN node_tags ON nodes.id = node_tags.node_id AND node_tags.k = 'highway' AND
-                        (v = 'services' OR v = 'rest_area')
-LEFT JOIN node_tags nt2 ON nodes.id = nt2.node_id AND nt2.k = 'name'
+                          st_transform(linestring,2154)) < 1000
+WHERE nodes.tags->'highway' = 'services' OR nodes.tags->'highway' = 'rest_area'
 GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref,
-         nodes.id, nt2.v, node_tags.v;
-
-ALTER TABLE osm_autoroutes_aires OWNER TO osm;
-
+         nodes.id, nodes.tags->'name', nodes.tags->'highway';
 SQL
 
-rm suivi-autoroutes.html
-wget -O suivi-autoroutes.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes.php
-cp suivi-autoroutes.html suivi-autoroutes.`grep "en date du ....-..-.." suivi-autoroutes.html |
-                                           head -1 |
-                                           sed "s/.*en date du \(....-..-..\).*/\1/"`.html
-
-rm suivi-autoroutes-sorties.html
-wget -O suivi-autoroutes-sorties.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes-sorties.php
-
-rm suivi-autoroutes-aires.html
-wget -O suivi-autoroutes-aires.html http://jocelyn.dnsalias.org/~jocelyn/osm/suivi-autoroutes-aires.php
-
-(cp suivi-autoroutes.html ~/online/site-alwaysdata-jocelyn/osm &&
- cp suivi-autoroutes-sorties.html ~/online/site-alwaysdata-jocelyn/osm &&
- cp suivi-autoroutes-aires.html ~/online/site-alwaysdata-jocelyn/osm &&
- cd ~/online/site-alwaysdata-jocelyn &&
- ./update.sh)
-
+php suivi-autoroutes.php > suivi-autoroutes.html
+php suivi-autoroutes-sorties.php >  suivi-autoroutes-sorties.html
+php suivi-autoroutes-aires.php >  suivi-autoroutes-aires.html

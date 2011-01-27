@@ -12,10 +12,7 @@ if (isset($_GET['src']))
 else
   header("Content-type: text/html; charset=UTF-8");
 
-if (!$c=pg_connect("dbname=osm host=localhost user=osm password=osm"))
-  die("Erreur connexion SQL");
-
-$date=exec('cat /home/jocelyn/gps/osm/france/osmosis-hourly/state.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
+include("../config.php");
 
 print "<html>
 <head>
