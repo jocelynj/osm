@@ -1,8 +1,12 @@
 #! /bin/sh
 
-. ../config
+. ../../config
 
 for i in `cat liste | sort -n -t"A" -k2`; do
+  if [ ! -e Autoroute_française_$i ]; then
+    wget http://fr.wikipedia.org/wiki/Autoroute_française_$i
+  fi
+
   id=`echo $i | sed "s/A\([0-9]*\).*/\1/"`
   ref=`echo $i | sed "s/A\([0-9]*.*\)/A \1/"`
   km=`grep -A1 '<th align="left">Longueur' Autoroute_française_$i | grep td | sed "s/<td>\([0-9.,]*\).*/\1/" | tr "," "." | tr -d "\n"`
@@ -50,8 +54,8 @@ DELETE FROM autoroutes WHERE id=821;
 
 
 -- depuis wikisara
-UPDATE autoroutes SET longueur=10  WHERE ref='A 6a' AND longueur=0;
-UPDATE autoroutes SET longueur=9   WHERE ref='A 6b' AND longueur=0;
+UPDATE autoroutes SET longueur=10  WHERE ref='A 6a';
+UPDATE autoroutes SET longueur=9   WHERE ref='A 6b';
 UPDATE autoroutes SET longueur=323 WHERE id=11;
 UPDATE autoroutes SET longueur=8   WHERE id=12;
 UPDATE autoroutes SET longueur=361 WHERE id=26;
