@@ -12,10 +12,7 @@ if (isset($_GET['src']))
 else
   header("Content-type: text/html; charset=UTF-8");
 
-if (!$c=pg_connect("dbname=osm host=localhost user=osm password=osm"))
-  die("Erreur connexion SQL");
-
-$date=exec('cat /home/jocelyn/gps/osm/france/osmosis-hourly/state.txt | sed s/timestamp=// | sed s/\\\\\\\\//g | sed s/[TZ]/" "/g');
+include("../config.php");
 
 function osm_link($type, $osm_id) {
   return "<a href='http://www.openstreetmap.org/browse/$type/$osm_id'>$osm_id</a>
@@ -66,9 +63,9 @@ $query_affluents ="SELECT ";
 for ($i = 1; $i < $max_affluent; $i++) {
   $query_affluents .= "
        rivers[$i][1] AS order$i, rivers[$i][2] AS id$i, rivers[$i][3] AS type$i,
-       (CASE WHEN rivers[$i][3] = ascii('R') THEN rt$i.v ELSE wt$i.v END) AS name$i,
-       (CASE WHEN rivers[$i][3] = ascii('R') THEN rts$i.v ELSE wts$i.v END) AS sandre$i,
-       (CASE WHEN rivers[$i][3] = ascii('R') THEN rtw$i.v ELSE wtw$i.v END) AS waterway$i,
+       (CASE WHEN rivers[$i][3] = ascii('R') THEN rt$i.tags->'name' ELSE wt$i.tags->'name' END) AS name$i,
+       (CASE WHEN rivers[$i][3] = ascii('R') THEN rt$i.tags->'ref:sandre' ELSE wt$i.tags->'ref:sandre' END) AS sandre$i,
+       (CASE WHEN rivers[$i][3] = ascii('R') THEN rt$i.tags->'waterway' ELSE wt$i.tags->'waterway' END) AS waterway$i,
 ";
   if ($i > 1) {
   $query_affluents .= "
@@ -81,12 +78,8 @@ $query_affluents .= "0
 FROM rivers_tributary";
 for ($i = 1; $i < $max_affluent; $i++) {
   $query_affluents .= "
-LEFT JOIN relation_tags rt$i ON rivers[$i][2] = rt$i.relation_id AND rt$i.k = 'name'
-LEFT JOIN relation_tags rts$i ON rivers[$i][2] = rts$i.relation_id AND rts$i.k = 'ref:sandre'
-LEFT JOIN relation_tags rtw$i ON rivers[$i][2] = rtw$i.relation_id AND rtw$i.k = 'waterway'
-LEFT JOIN way_tags wt$i ON rivers[$i][2] = wt$i.way_id AND wt$i.k = 'name'
-LEFT JOIN way_tags wts$i ON rivers[$i][2] = wts$i.way_id AND wts$i.k = 'ref:sandre'
-LEFT JOIN way_tags wtw$i ON rivers[$i][2] = wtw$i.way_id AND wtw$i.k = 'waterway'
+LEFT JOIN relations rt$i ON rivers[$i][2] = rt$i.id
+LEFT JOIN ways wt$i ON rivers[$i][2] = wt$i.id
 ";
   if ($i > 1) {
     $i2 = $i - 1;
@@ -125,7 +118,7 @@ while($affluent=pg_fetch_object($res_affluents)) {
   for ($i = 1; $i < $max_affluent; $i ++) {
     $osm_id = $affluent->{"id$i"};
     if ($osm_id) {
-      if ($prev_river[$i] != $osm_id) {
+      if (!isset($prev_river[$i]) || $prev_river[$i] != $osm_id) {
         if ($i == 1) {
           print "&nbsp;\n";
           print "  </td>\n";
@@ -161,7 +154,7 @@ while($affluent=pg_fetch_object($res_affluents)) {
         print "$waterway";
         print "  </td>\n";
         print "  <td>\n";
-        if ($affluent->{"waya$i"}) {
+        if (isset($affluent->{"waya$i"})) {
           $osm_id_lien_a = osm_link("way", $affluent->{"waya$i"});
           $osm_id_lien_b = osm_link("way", $affluent->{"wayb$i"});
           print "$osm_id_lien_a $osm_id_lien_b";
@@ -173,20 +166,20 @@ while($affluent=pg_fetch_object($res_affluents)) {
             $rela = $prev_river[$i-1];
             $wayb = $osm_id;
             $query_croisement = "
-SELECT wg.way_id AS waya, wg2.way_id AS wayb
+SELECT wg.id AS waya, wg2.id AS wayb
 FROM relation_members rm
-JOIN way_geometry wg ON wg.way_id = rm.member_id
-JOIN way_nodes wn1 ON wn1.way_id = wg.way_id AND
+JOIN ways wg ON wg.id = rm.member_id
+JOIN way_nodes wn1 ON wn1.way_id = wg.id AND
                       wn1.sequence_id = (SELECT MAX(sequence_id) FROM way_nodes
-                                         WHERE way_nodes.way_id = wg.way_id)
+                                         WHERE way_nodes.way_id = wg.id)
 
-JOIN way_geometry wg2 ON ST_Intersects(wg.geom, wg2.geom)
-JOIN way_nodes wn2 ON wn2.way_id = wg2.way_id AND
+JOIN ways wg2 ON ST_Intersects(wg.linestring, wg2.linestring)
+JOIN way_nodes wn2 ON wn2.way_id = wg2.id AND
                       wn2.sequence_id = (SELECT MAX(sequence_id) FROM way_nodes
-                                         WHERE way_nodes.way_id = wg2.way_id)
+                                         WHERE way_nodes.way_id = wg2.id)
 
 WHERE rm.member_type = 'W' AND rm.member_role != 'tributary' AND
-      rm.relation_id = $rela AND wg2.way_id = $wayb AND
+      rm.relation_id = $rela AND wg2.id = $wayb AND
       wn1.node_id != wn2.node_id
 ";
             $res_croisement=pg_query($query_croisement);
@@ -224,13 +217,14 @@ print "</table>\n";
 print "<h2>Connexions entre rivières sans affluent spécifié dans une relation</h2>\n";
 
 $query_affluents = "
-SELECT id1, name1, way1, id2, name2, way2, rt1.v AS waterway1, rt2.v as waterway2
+SELECT id1, name1, way1, id2, name2, way2,
+       rt1.tags->'waterway' AS waterway1, rt2.tags->'waterway' as waterway2
 FROM rivers_intersections
 LEFT JOIN rivers_tributary ON id1 = ANY(rivers) AND id2 = ANY(rivers)
-LEFT JOIN relation_tags rt1 ON rt1.relation_id = id1 AND rt1.k = 'waterway'
-LEFT JOIN relation_tags rt2 ON rt2.relation_id = id2 AND rt2.k = 'waterway'
-WHERE depth IS NULL AND rt1.v != 'canal' AND rt2.v != 'canal' AND
-                        rt1.v != 'riverbank' AND rt2.v != 'riverbank'
+LEFT JOIN relations rt1 ON rt1.id = id1 AND rt1.tags ? 'waterway'
+LEFT JOIN relations rt2 ON rt2.id = id2 AND rt2.tags ? 'waterway'
+WHERE depth IS NULL AND rt1.tags->'waterway' != 'canal' AND rt2.tags->'waterway' != 'canal' AND
+                        rt1.tags->'waterway' != 'riverbank' AND rt2.tags->'waterway' != 'riverbank'
 ORDER BY name1, name2;
 ";
 
@@ -278,17 +272,15 @@ print "</table>";
 print "<h2>Rivières qui ne sont pas affluents d'une autre rivière</h2>\n";
 
 $query_affluents = "
-SELECT rt.relation_id AS id, rtn.v AS name, rts.v AS sandre, rtw.v AS waterway
-FROM relation_tags rt
-LEFT JOIN relation_tags rtn ON rt.relation_id = rtn.relation_id AND rtn.k = 'name'
-LEFT JOIN relation_tags rts ON rt.relation_id = rts.relation_id AND rts.k = 'ref:sandre'
-LEFT JOIN relation_tags rtw ON rt.relation_id = rtw.relation_id AND rtw.k = 'waterway'
-LEFT JOIN rivers_tributary ON rt.relation_id = ANY(rivers[2:1000])
-LEFT JOIN rivers_coastline_intersections inter ON rt.relation_id = inter.id1
-WHERE rt.k = 'type' AND rt.v = 'waterway' AND depth IS NULL AND
-      NOT rtw.v = 'canal' AND NOT rtw.v = 'riverbank' AND
+SELECT rt.id AS id, rt.tags->'name' AS name,
+       rt.tags->'ref:sandre' AS sandre, rt.tags->'waterway' AS waterway
+FROM relations rt
+LEFT JOIN rivers_tributary ON rt.id = ANY(rivers[2:100]) 
+LEFT JOIN rivers_coastline_intersections inter ON rt.id = inter.id1
+WHERE rt.tags->'type' = 'waterway' AND depth IS NULL AND
+      NOT rt.tags->'waterway' = 'canal' AND NOT rt.tags->'waterway' = 'riverbank' AND
       inter.way2 IS NULL
-ORDER BY rtn.v
+ORDER BY rt.tags->'name';
 ";
 
 $res_affluents=pg_query($query_affluents);

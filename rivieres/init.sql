@@ -25,4 +25,3 @@ WITH RECURSIVE search_river(id, member_id, member_type, rivers, depth, path, cyc
 )
 SELECT DISTINCT ON (member_id, member_type) rivers, depth FROM search_river
 ORDER BY member_id, member_type, depth DESC;
-ALTER VIEW rivers_tributary OWNER TO osm;
