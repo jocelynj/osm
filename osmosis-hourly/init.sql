@@ -1,20 +1,89 @@
-CREATE OR REPLACE FUNCTION clean_bdd_ways_simple(zone text, l integer) RETURNS integer AS
+CREATE OR REPLACE FUNCTION clean_bdd_ways_simple(zone text, l integer, opt integer)
+RETURNS integer AS
 $BODY$
 DECLARE
   bbox geometry;
   num integer;
 BEGIN
+  SET ENABLE_SEQSCAN TO false;
   SELECT INTO bbox geom FROM bounding_box WHERE name = zone;
 
   DROP TABLE IF EXISTS ways_to_remove;
-  CREATE TABLE
-  ways_to_remove
-  AS
-  SELECT id
-  FROM ways
-  WHERE ST_Disjoint(bbox, ways.bbox)
-  LIMIT l;
-  
+
+  IF opt = 0 THEN
+    RAISE NOTICE 'opt 0';
+    CREATE TABLE
+    ways_to_remove
+    AS
+    SELECT id
+    FROM ways
+    WHERE ST_Disjoint(bbox, ways.linestring)
+    LIMIT l;
+
+  ELSIF opt = 1 THEN
+    RAISE NOTICE 'opt 1';
+    CREATE TABLE
+    ways_to_remove
+    AS
+    SELECT id
+    FROM ways
+    WHERE ways.linestring IS NULL
+    LIMIT l;
+
+  ELSIF opt = 2 THEN
+    RAISE NOTICE 'opt 2';
+    CREATE TABLE
+    ways_to_remove
+    AS
+    SELECT id
+    FROM ways
+    WHERE st_numpoints(ways.linestring) < 2
+    LIMIT l;
+
+  ELSIF opt = 3 THEN
+    RAISE NOTICE 'opt 3';
+    CREATE TABLE
+    ways_to_remove
+    AS
+    SELECT id
+    FROM ways
+    where ways.bbox >> (select geom from bounding_box where name = 'france_metropole') AND
+          ST_Disjoint(bbox, ways.linestring)
+    LIMIT l;
+
+  ELSIF opt = 4 THEN
+    RAISE NOTICE 'opt 4';
+    CREATE TABLE
+    ways_to_remove
+    AS
+    SELECT id
+    FROM ways
+    where ways.bbox << (select geom from bounding_box where name = 'france_metropole') AND
+          ST_Disjoint(bbox, ways.linestring)
+    LIMIT l;
+
+  ELSIF opt = 10 THEN
+    RAISE NOTICE 'opt 10';
+    CREATE TABLE
+    ways_to_remove
+    AS
+    SELECT id
+    FROM ways
+    where (ways.bbox << (select geom from bounding_box where name = 'france_metropole') OR
+           ways.bbox >> (select geom from bounding_box where name = 'france_metropole') OR
+           ways.bbox <<| (select geom from bounding_box where name = 'france_metropole') OR
+           ways.bbox |>> (select geom from bounding_box where name = 'france_metropole')) AND
+          ST_Disjoint(bbox, ways.linestring)
+    LIMIT l;
+
+  ELSE
+    RAISE EXCEPTION 'unknown opt %', opt;
+  END IF;
+
+  CREATE INDEX idx_way_to_remove_id ON ways_to_remove USING btree(id); 
+
+  RAISE NOTICE 'ways_to_remove created';
+
   DELETE
   FROM ways
   USING ways_to_remove
@@ -45,8 +114,7 @@ DECLARE
   rel_removed integer;
   rel_removed2 integer;
 BEGIN
-
---  bbox := SELECT geom FROM bounding_box WHERE name = zone;
+  SET ENABLE_SEQSCAN TO false;
   SELECT INTO bbox geom FROM bounding_box WHERE name = zone;
 
   DROP TABLE IF EXISTS ways_to_remove;
@@ -55,7 +123,11 @@ BEGIN
   AS
   SELECT id
   FROM ways
-  WHERE ST_Disjoint(bbox, ways.bbox)
+  where (ways.bbox << bbox OR
+         ways.bbox >> bbox OR
+         ways.bbox <<| bbox OR
+         ways.bbox |>> bbox) AND
+        ST_Disjoint(bbox, ways.linestring)
   LIMIT l;
   
   DELETE
@@ -152,10 +224,13 @@ CREATE OR REPLACE FUNCTION clean_bdd_nodes(zone text, l integer) RETURNS integer
 $BODY$
 DECLARE
   bbox geometry;
+  bbox_metro geometry;
   num integer;
 BEGIN
 
+  SET ENABLE_SEQSCAN TO false;
   SELECT INTO bbox geom FROM bounding_box WHERE name = zone;
+  SELECT INTO bbox_metro geom FROM bounding_box WHERE name = 'france_metropole';
 
   -- nodes
   DROP TABLE IF EXISTS nodes_to_remove;
@@ -164,9 +239,17 @@ BEGIN
   AS
   SELECT id
   FROM nodes
-  WHERE ST_Disjoint(bbox, geom)
+  WHERE (nodes.geom << bbox_metro OR
+         nodes.geom >> bbox_metro OR
+         nodes.geom <<| bbox_metro OR
+         nodes.geom |>> bbox_metro) AND
+        ST_Disjoint(bbox, nodes.geom)
   LIMIT l;
   
+  CREATE INDEX idx_nodes_to_remove_id ON nodes_to_remove USING btree(id); 
+
+  RAISE NOTICE 'nodes_to_remove created';
+
   DELETE
   FROM nodes
   USING nodes_to_remove
@@ -181,7 +264,7 @@ BEGIN
   -- relations
   DELETE
   FROM relation_members
-  USING ways_to_remove
+  USING nodes_to_remove
   WHERE relation_members.member_type = 'N' AND relation_members.member_id = nodes_to_remove.id;
   
   SELECT INTO num count(*) FROM nodes_to_remove;
