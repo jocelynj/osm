@@ -15,8 +15,7 @@ else
 include("../config.php");
 
 function osm_link($type, $osm_id) {
-  return "<a href='http://www.openstreetmap.org/browse/$type/$osm_id'>$osm_id</a>
-          <a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/$type/$osm_id/full' target='suivi-josm'>josm</a>";
+  return "<a href='http://www.openstreetmap.org/browse/$type/$osm_id'>$osm_id</a>&nbsp;<a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/$type/$osm_id/full' target='suivi-josm'>josm</a>";
 }
 function sandre_link($sandre) {
   return "  <a href='http://sandre.eaufrance.fr/app/chainage/courdo/htm/$sandre.php'>$sandre</a>\n";
@@ -138,12 +137,14 @@ while($affluent=pg_fetch_object($res_affluents)) {
         print "  </td>\n";
         print "  <td>\n";
         if ($affluent->{"type$i"} == ord('R')) {
+          $short_type = "r";
           $type = "relation";
         } else {
+          $short_type = "w";
           $type = "way";
         }
         $osm_id_lien = osm_link($type, $osm_id);
-        print "$osm_id_lien $type";
+        print "$osm_id_lien $short_type";
         print "  </td>\n";
         print "  <td>\n";
         $sandre = $affluent->{"sandre$i"};
@@ -169,18 +170,10 @@ while($affluent=pg_fetch_object($res_affluents)) {
 SELECT wg.id AS waya, wg2.id AS wayb
 FROM relation_members rm
 JOIN ways wg ON wg.id = rm.member_id
-JOIN way_nodes wn1 ON wn1.way_id = wg.id AND
-                      wn1.sequence_id = (SELECT MAX(sequence_id) FROM way_nodes
-                                         WHERE way_nodes.way_id = wg.id)
-
 JOIN ways wg2 ON ST_Intersects(wg.linestring, wg2.linestring)
-JOIN way_nodes wn2 ON wn2.way_id = wg2.id AND
-                      wn2.sequence_id = (SELECT MAX(sequence_id) FROM way_nodes
-                                         WHERE way_nodes.way_id = wg2.id)
-
 WHERE rm.member_type = 'W' AND rm.member_role != 'tributary' AND
       rm.relation_id = $rela AND wg2.id = $wayb AND
-      wn1.node_id != wn2.node_id
+      wg.nodes[array_length(wg.nodes, 1)] != wg2.nodes[array_length(wg2.nodes, 1)]
 ";
             $res_croisement=pg_query($query_croisement);
             if($croisement=pg_fetch_object($res_croisement)) {
