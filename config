@@ -3,7 +3,7 @@
 # paths
 OSMOSIS_DIR="/data/project/osmosis/osmosis-0.39/"
 WORKDIR="/data/work/osmosis/"
-export JAVACMD_OPTIONS="-Xms2048M -Xmx2048M -XX:MaxPermSize=2048M -Djava.io.tmpdir=/data/work/osmosis/tmp/"
+export JAVACMD_OPTIONS="-server -Xms2048M -Xmx2048M -XX:MaxPermSize=2048M -Djava.io.tmpdir=/data/work/osmosis/tmp/"
 
 # postgresql database
 DATABASE="osmosis"
