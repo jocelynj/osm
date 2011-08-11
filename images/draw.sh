@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 . ./draw-functions.sh
 
 if [ "x$1" = "x" ]; then
