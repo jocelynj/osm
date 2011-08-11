@@ -9,7 +9,7 @@ for i in `cat liste | sort -n -t"A" -k2`; do
 
   id=`echo $i | sed "s/A\([0-9]*\).*/\1/"`
   ref=`echo $i | sed "s/A\([0-9]*.*\)/A \1/"`
-  km=`grep -A1 '<th align="left">Longueur' Autoroute_française_$i | grep td | sed "s/<td>\([0-9.,]*\).*/\1/" | tr "," "." | tr -d "\n"`
+  km=`grep -A1 '<th scope="row" align="left">Longueur' Autoroute_française_$i | grep td | sed "s/<td>\([0-9.,]*\).*/\1/" | tr "," "." | tr -d "\n"`
   if [ "x$km" = "x" ]; then
     km=0
   fi
@@ -90,9 +90,11 @@ UPDATE autoroutes SET longueur=4   WHERE id=501 AND longueur=0;
 UPDATE autoroutes SET longueur=3   WHERE id=520 AND longueur=0;
 UPDATE autoroutes SET longueur=1.5 WHERE id=557;
 UPDATE autoroutes SET longueur=7   WHERE id=570 AND longueur=0;
-UPDATE autoroutes SET longueur=19  WHERE id=620 AND longueur=0;
+UPDATE autoroutes SET longueur=19  WHERE id=620;
 UPDATE autoroutes SET longueur=34  WHERE id=630;
 UPDATE autoroutes SET longueur=8   WHERE id=680;
+
+INSERT INTO autoroutes VALUES (631, 'A 631', 2);
 
 -- depuis ASF
 UPDATE autoroutes SET longueur=33  WHERE id=837 AND longueur=0;
