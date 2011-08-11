@@ -45,3 +45,6 @@ ORDER BY relations.id, relation_members.sequence_id;"
 
 # power lines
 get_line_shp power.shp "tags->'power' = 'line'"
+
+# motorway
+get_line_shp motorway.shp "tags ? 'highway' AND tags->'highway' = 'motorway'"
