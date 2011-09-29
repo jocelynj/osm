@@ -6,8 +6,8 @@ exit 0
 . ../config
 
 createuser $USER
-createdb $USER
-createlang plpgsql $USER
+createdb $DATABASE
+createlang plpgsql $DATABASE
 
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/hstore.sql
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/postgis-1.5/postgis.sql
