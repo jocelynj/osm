@@ -16,9 +16,10 @@ psql -U postgres "$DATABASE" -c "ALTER TABLE spatial_ref_sys OWNER TO $USER"
 psql -U postgres "$DATABASE" -c "ALTER TABLE geography_columns OWNER TO $USER"
 psql -U postgres "$DATABASE" -c "ALTER TABLE geometry_columns OWNER TO $USER"
 
-psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsimple_schema_0.6.sql"
-psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsimple_schema_0.6_bbox.sql"
-psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsimple_schema_0.6_linestring.sql"
+psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsnapshot_schema_0.6.sql"
+psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsnapshot_schema_0.6_bbox.sql"
+psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsnapshot_schema_0.6_linestring.sql"
+psql -U "$USER" "$DATABASE" -f "$OSMOSIS_DIR/script/pgsnapshot_schema_0.6_action.sql"
 
 # change state number to the correct one
 cd "$WORKDIR"
