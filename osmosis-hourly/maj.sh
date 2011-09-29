@@ -23,12 +23,12 @@ echo ""
 echo "*** Get changes from server"
 $OSMOSIS --read-replication-interval workingDirectory="$WORKDIR" --simplify-change --write-xml-change "$CHANGEFILE"
 
-echo ""
-echo "*** Update $SOURCE_OSM_FILE"
-cd $WORKDIR
-$OSMOSIS --read-xml-change "$CHANGEFILE" --read-pbf "$SOURCE_OSM_FILE" --apply-change --buffer --bounding-polygon file="$POLYGON" --write-pbf file="$TARGET_OSM_FILE"
-rm "$SOURCE_OSM_FILE"
-ln "$TARGET_OSM_FILE" "$SOURCE_OSM_FILE"
+#echo ""
+#echo "*** Update $SOURCE_OSM_FILE"
+#cd $WORKDIR
+#$OSMOSIS --read-xml-change "$CHANGEFILE" --read-pbf "$SOURCE_OSM_FILE" --apply-change --buffer --bounding-polygon file="$POLYGON" --write-pbf file="$TARGET_OSM_FILE"
+#rm "$SOURCE_OSM_FILE"
+#ln "$TARGET_OSM_FILE" "$SOURCE_OSM_FILE"
 
 echo ""
 echo "*** Insert data in postgresql"
@@ -37,9 +37,7 @@ $OSMOSIS --read-xml-change "$CHANGEFILE" --write-pgsql-change database="$DATABAS
 echo ""
 echo "*** Clean database"
 $PREFIX psql "$DATABASE" -c "insert into actions select * from actions_bak;"
-$PREFIX psql "$DATABASE" -c "SELECT * FROM osmosisUpdate_way1();"
-$PREFIX psql "$DATABASE" -c "SELECT * FROM osmosisUpdate_way2();"
-$PREFIX psql "$DATABASE" -c "SELECT * FROM osmosisUpdate_way3();"
+$PREFIX psql "$DATABASE" -c "SELECT * FROM osmosisUpdate_way();"
 $PREFIX psql "$DATABASE" -c "SELECT * FROM osmosisUpdate_node();"
 $PREFIX psql "$DATABASE" -c "truncate actions;"
 
