@@ -36,11 +36,15 @@ $OSMOSIS --read-xml-change "$CHANGEFILE" --write-pgsql-change database="$DATABAS
 
 echo ""
 echo "*** Clean database"
-$PREFIX psql "$DATABASE" -c "insert into actions select * from actions_bak;"
-$PREFIX psql "$DATABASE" -c "SELECT * FROM osmosisUpdate_way();"
-$PREFIX psql "$DATABASE" -c "SELECT * FROM osmosisUpdate_node();"
-$PREFIX psql "$DATABASE" -c "truncate actions;"
+$PREFIX psql "$DATABASE" -c "INSERT INTO actions SELECT * FROM actions_bak;"
+$PREFIX psql "$DATABASE" -c "DELETE FROM actions WHERE action = 'D'"
+$PREFIX psql "$DATABASE" -c "ANALYZE actions;"
 
+$PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_way();"
+$PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_node();"
+$PREFIX psql "$DATABASE" -c "TRUNCATE actions;"
+
+rm $LOCKFILE
 exit
 
 echo ""
