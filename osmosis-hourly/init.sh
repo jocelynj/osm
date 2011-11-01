@@ -10,6 +10,8 @@ createdb $DATABASE
 createlang plpgsql $DATABASE
 
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/hstore.sql
+psql -U postgres "$DATABASE" -c "create extension hstore"
+
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/postgis-1.5/postgis.sql
 psql -U postgres "$DATABASE" -f /usr/share/postgresql/8.4/contrib/postgis-1.5/spatial_ref_sys.sql
 psql -U postgres "$DATABASE" -c "ALTER TABLE spatial_ref_sys OWNER TO $USER"
