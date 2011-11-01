@@ -16,8 +16,7 @@ function get_line_shp {
 FROM ways"
 
   sql="$sql
-WHERE $2 AND
-      ST_NumPoints(linestring) > 2"
+WHERE $2"
   if [ "x$3" != "x" ]; then
     sql="$sql AND $3 "
   fi
