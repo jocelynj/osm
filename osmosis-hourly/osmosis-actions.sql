@@ -109,7 +109,7 @@ $$ LANGUAGE plpgsql;
 
 -- exécution après osmosis
 
-insert into actions select * from actions_bak;
+--insert into actions select * from actions_bak;
 
-SELECT * FROM osmosisUpdate_way();
-SELECT * FROM osmosisUpdate_node();
+--SELECT * FROM osmosisUpdate_way();
+--SELECT * FROM osmosisUpdate_node();
