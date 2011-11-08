@@ -8,7 +8,7 @@ fi
 
 #     <member type="relation" ref="1047206" role=""/>
 
-if [ `grep 'member type="relation"' r$1.osm | wc -l` -gt 0 ]; then
+if [ "x$2" != "xalone" -a `grep 'member type="relation"' r$1.osm | wc -l` -gt 0 ]; then
   grep 'member type="relation"' r$1.osm | \
     sed 's/.*"relation" ref="\([0-9]*\)".*/\1/' | \
     xargs -n1 ./import-relation-to-osmosis.sh
