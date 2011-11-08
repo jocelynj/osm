@@ -16,6 +16,7 @@ include("../config.php");
 
 print "<html>
 <head>
+  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>
   <title>Sorties d'autoroute en date du $date</title>
 </head>
 <body>

@@ -24,6 +24,7 @@ function sandre_link($sandre) {
 
 print "<html>
 <head>
+  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>
   <title>Affluents en date du $date</title>
 </head>
 <body>
