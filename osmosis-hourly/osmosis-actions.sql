@@ -16,40 +16,44 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION osmosisUpdate_way() RETURNS void AS $$
 DECLARE
-  line RECORD;
+  to_keep geometry;
+  r RECORD;
 BEGIN
   SET enable_seqscan TO FALSE;
-  RAISE NOTICE 'way1';
-  FOR line IN SELECT actions.id AS id
-              FROM actions
-              JOIN ways ON ways.id = actions.id AND
-                           ways.linestring IS NULL
-              WHERE data_type = 'W'
-  LOOP
-    PERFORM delete_way(line.id);
-  END LOOP;
 
-  RAISE NOTICE 'way2';
-  FOR line IN SELECT actions.id AS id
-              FROM actions
-              JOIN ways ON ways.id = actions.id AND st_npoints(ways.linestring) = 1
-              JOIN bounding_box ON bounding_box.name = 'all' AND
-                                   ST_Disjoint(ST_StartPoint(ways.linestring),
-                                               bounding_box.geom)
-              WHERE data_type = 'W'
-  LOOP
-    PERFORM delete_way(line.id);
-  END LOOP;
+  SELECT INTO to_keep geom
+  FROM bounding_box
+  WHERE bounding_box.name = 'all';
 
-  RAISE NOTICE 'way3';
-  FOR line IN SELECT actions.id AS id
+  FOR r IN SELECT actions.id AS id, ways.linestring
               FROM actions
-              JOIN ways ON ways.id = actions.id AND st_npoints(ways.linestring) > 1
-              JOIN bounding_box ON bounding_box.name = 'all' AND
-                                   ST_Disjoint(ways.linestring, bounding_box.geom)
+              JOIN ways ON ways.id = actions.id
               WHERE data_type = 'W'
   LOOP
-    PERFORM delete_way(line.id);
+    BEGIN
+      IF r.linestring IS NULL
+      THEN
+        PERFORM delete_way(r.id);
+
+      ELSIF st_npoints(r.linestring) = 1 AND
+            ST_Disjoint(ST_StartPoint(r.linestring), to_keep)
+      THEN
+        PERFORM delete_way(r.id);
+
+      ELSIF st_npoints(r.linestring) > 1 AND
+            ST_Disjoint(r.linestring, to_keep)
+      THEN
+        PERFORM delete_way(r.id);
+
+      ELSE
+        DELETE from actions WHERE data_type = 'W' AND id = r.id AND action != 'D';
+      END IF;
+    EXCEPTION
+      WHEN query_canceled THEN
+        RAISE NOTICE 'canceled';
+        RETURN;
+    END;
+
   END LOOP;
 END;
 $$ LANGUAGE plpgsql;
