@@ -44,36 +44,22 @@ $PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_way();"
 $PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_node();"
 $PREFIX psql "$DATABASE" -c "TRUNCATE actions;"
 
-rm $LOCKFILE
-exit
-
-echo ""
-echo "*** Clean ways database"
-$PREFIX psql "$DATABASE" -c "SELECT clean_bdd_ways_simple('$BOUNDING_BOX', 1000000, 1);"
-$PREFIX psql "$DATABASE" -c "SELECT clean_bdd_ways_simple('$BOUNDING_BOX', 1000000, 2);"
-$PREFIX psql "$DATABASE" -c "SELECT clean_bdd_ways_simple('$BOUNDING_BOX', 1000000, 10);"
-$PREFIX psql "$DATABASE" -c "SELECT clean_bdd_ways('$BOUNDING_BOX', 1000000);"
-
 if [ `date +%u` != 2 ]; then
   rm $LOCKFILE
   exit
 fi
 
 echo ""
-echo "*** Clean nodes database"
-$PREFIX psql "$DATABASE" -c "SELECT clean_bdd_nodes('$BOUNDING_BOX', 1000000);"
+echo "*** VACUUM nodes"
+$PREFIX psql "$DATABASE" -c "VACUUM VERBOSE nodes;"
 
 echo ""
-echo "*** CLUSTER nodes"
-$PREFIX psql "$DATABASE" -c "CLUSTER nodes USING pk_nodes;"
+echo "*** VACUUM ways"
+$PREFIX psql "$DATABASE" -c "VACUUM VERBOSE ways;"
 
 echo ""
-echo "*** CLUSTER ways"
-$PREFIX psql "$DATABASE" -c "CLUSTER ways USING idx_ways_bbox;"
-
-echo ""
-echo "*** CLUSTER ways_nodes"
-$PREFIX psql "$DATABASE" -c "CLUSTER way_nodes USING pk_way_nodes;"
+echo "*** VACUUM ways_nodes"
+$PREFIX psql "$DATABASE" -c "VACUUM VERBOSE way_nodes;"
 
 echo ""
 echo "*** ANALYZE"
