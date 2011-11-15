@@ -62,6 +62,8 @@ case "$type" in
 
   "motorway")
     draw_shp $img border.shp 200 200 0
+    draw_shp $img primary.shp 150 20 20
+    draw_shp $img trunk.shp 20 200 20
     draw_shp $img motorway.shp 200 200 200
     draw_shp $img coastline.shp 200 200 255
     ;;
