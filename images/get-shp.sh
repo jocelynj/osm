@@ -48,3 +48,5 @@ get_line_shp power.shp "tags->'power' = 'line'"
 
 # motorway
 get_line_shp motorway.shp "tags ? 'highway' AND tags->'highway' = 'motorway'"
+get_line_shp trunk.shp "tags ? 'highway' AND tags->'highway' = 'trunk'"
+get_line_shp primary.shp "tags ? 'highway' AND tags->'highway' = 'primary'"
