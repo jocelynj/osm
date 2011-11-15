@@ -13,12 +13,14 @@ SELECT DISTINCT ON (rt.id, rtt2.id)
        rtt2.id AS id2, rtt2.tags->'name' AS name2, wg2.id AS way2
 FROM relations rt
 JOIN relation_members rm ON rm.relation_id = rt.id AND rm.member_type = 'W'
-JOIN ways wg ON wg.id = rm.member_id AND ST_IsValid(wg.linestring)
+JOIN ways wg ON wg.id = rm.member_id AND ST_IsValid(wg.linestring) AND
+                St_NPoints(wg.linestring) > 1
 
 JOIN relations rtt2 ON rtt2.tags ? 'type' AND rtt2.tags->'type' = 'waterway' AND
                        rtt2.id > rt.id
 JOIN relation_members rm2 ON rm2.relation_id = rtt2.id AND rm2.member_type = 'W'
 JOIN ways wg2 ON wg2.id = rm2.member_id AND ST_IsValid(wg2.linestring) AND
+                 St_NPoints(wg2.linestring) > 1 AND
                  (wg.bbox && wg2.bbox) AND
                  ST_Intersects(wg.linestring, wg2.linestring)
 
