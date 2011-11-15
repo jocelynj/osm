@@ -8,11 +8,15 @@ date
 
 echo ""
 date
-echo ""
+echo " *** autoroutes"
 
 (cd autoroutes && ./maj.sh)
+
+echo " *** rivieres"
 (cd rivieres && ./maj.sh)
 # (cd transport && ./maj.sh)
+
+echo " *** images"
 (cd images && ./maj.sh)
 
 echo ""
