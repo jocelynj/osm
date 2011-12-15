@@ -14,8 +14,9 @@ get_line_shp admin_4.shp "tags ? 'admin_level' AND tags->'admin_level' = '4' AND
 get_line_shp admin_6.shp "tags ? 'admin_level' AND tags->'admin_level' = '6' AND NOT tags ? 'maritime'"
 
 # rivers
-get_line_shp rivers_line.shp "tags ? 'waterway' AND tags->'waterway' != 'stream'"
-get_polygon_shp rivers_polygon.shp "tags ? 'waterway' AND tags->'waterway' != 'stream'"
+RIVER="('riverbank', 'river', 'canal')"
+get_line_shp rivers_line.shp "tags ? 'waterway' AND tags->'waterway' IN $RIVER"
+get_polygon_shp rivers_polygon.shp "tags ? 'waterway' AND tags->'waterway' IN $RIVER"
 get_polygon_shp rivers_lake.shp "(tags ? 'natural' AND tags->'natural' = 'water' OR tags ? 'landuse' AND tags->'landuse' = 'reservoir') AND
                              ST_Area(geography(ST_MakePolygon(linestring))) > 100"
 
