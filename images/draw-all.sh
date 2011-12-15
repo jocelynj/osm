@@ -9,7 +9,7 @@ for bbox in $bbox_list; do
   mkdir -p $WORKDIR/images/$bbox/thumbs
   ./draw-bbox.sh $bbox
 
-  for type in coastline border admin rivers rivers-relation motorway; do
+  for type in coastline border admin rivers rivers-relation motorway railway; do
     ./draw.sh $bbox $type
   done
 done

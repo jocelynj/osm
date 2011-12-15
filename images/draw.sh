@@ -68,6 +68,13 @@ case "$type" in
     draw_shp $img coastline.shp 200 200 255
     ;;
 
+  "railway")
+    draw_shp $img border.shp 200 200 0
+    draw_shp $img railway.shp 200 200 200
+    draw_shp $img coastline.shp 200 200 255
+    ;;
+
+
   default)
     echo "action $type not valid"
     exit 1
