@@ -56,33 +56,35 @@ def osc_modif(config, options):
     in_osc.CopyTo(out_osc)
 
 
-class template_config:
+if __name__ == "__main__":
 
-    db_base     = "osm"
-    db_user     = ""
-    db_password = ""
-    db_schema   = "osmosis"
+    class template_config:
 
-    def init(self):
-        self.db_string = "dbname=%s user=%s password=%s"%(self.db_base, self.db_user, self.db_password)
+        db_base     = "osm"
+        db_user     = ""
+        db_password = ""
+        db_schema   = "osmosis"
 
-config = template_config()
-config.init()
+        def init(self):
+            self.db_string = "dbname=%s user=%s password=%s"%(self.db_base, self.db_user, self.db_password)
 
-config.dbs = config.db_string
-config.dbp = "osmosis"
+    config = template_config()
+    config.init()
 
-from optparse import OptionParser
+    config.dbs = config.db_string
+    config.dbp = "osmosis"
 
-parser = OptionParser()
-parser.add_option("--source", dest="source", action="store",
-                  help="Osc source file")
-parser.add_option("--dest", dest="dest", action="store",
-                  help="Osc destination file")
-parser.add_option("--position-only", dest="position_only", action="store_true",
-                  help="Only report positions")
-parser.add_option("--poly", dest="poly", action="store",
-                  help="Polygon to use to limit changes")
-(options, args) = parser.parse_args()
+    from optparse import OptionParser
 
-osc_modif(config, options)
+    parser = OptionParser()
+    parser.add_option("--source", dest="source", action="store",
+                      help="Osc source file")
+    parser.add_option("--dest", dest="dest", action="store",
+                      help="Osc destination file")
+    parser.add_option("--position-only", dest="position_only", action="store_true",
+                      help="Only report positions")
+    parser.add_option("--poly", dest="poly", action="store",
+                      help="Polygon to use to limit changes")
+    (options, args) = parser.parse_args()
+
+    osc_modif(config, options)
