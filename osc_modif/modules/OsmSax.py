@@ -22,6 +22,7 @@
 import re, commands, sys, os, time, bz2, xml, gzip, cStringIO
 from xml.sax import make_parser, handler
 from xml.sax.saxutils import XMLGenerator, quoteattr
+from OrderedDict import OrderedDict
 
 ###########################################################################
 
@@ -347,7 +348,16 @@ def _formatData(data):
         data[u"version"] = str(data[u"version"])
     if u"uid" in data:
         data[u"uid"] = str(data[u"uid"])
-    return data
+    return _orderData(data)
+
+def _orderData(data):
+    data_o = OrderedDict()
+    attrs_list = ("id", "version", "timestamp", "uid", "user", "changeset", "lat", "lon")
+    for a in attrs_list:
+        if a in data:
+            data_o[a] = data[a]
+    return data_o
+
 
 class OsmSaxWriter(XMLGenerator):
 
@@ -446,13 +456,13 @@ def RelationToXml(data, full = False):
 
 class OscSaxWriter(XMLGenerator):
 
-    def __init__(self, out, enc, osmosis_conn = None):
+    def __init__(self, out, enc, reader = None):
         if type(out) == str:
             XMLGenerator.__init__(self, open(out, "w"), enc)
         else:
             XMLGenerator.__init__(self, out, enc)
 
-        self.osmosis_conn = osmosis_conn
+        self.reader = reader
     
     def startElement(self, name, attrs):
         self._write('<' + name)
@@ -467,7 +477,7 @@ class OscSaxWriter(XMLGenerator):
         self._write('<' + name)
         for (name, value) in attrs.items():
             self._write(' %s=%s' % (name, quoteattr(value)))
-        self._write(' />\n')
+        self._write('/>\n')
 
     def begin(self):
         self.startElement("osmChange", { "version": "0.6",
@@ -482,12 +492,12 @@ class OscSaxWriter(XMLGenerator):
         t2 = time.time()
         print ".osc read took: ", t2 - self.t1
 
-        if self.osmosis_conn:
+        if self.reader:
             # add ways that were not modified, but included by ways or relations
             t1 = time.time()
             ways_to_add = set(self.ways_to_add) - set(self.ways_printed)
             for i in ways_to_add:
-                way_info = self.osmosis_conn.WayGet(i)
+                way_info = self.reader.WayGet(i)
                 if way_info:
                     self.WayUpdate(way_info)
             t2 = time.time()
@@ -497,7 +507,7 @@ class OscSaxWriter(XMLGenerator):
             t1 = time.time()
             nodes_to_add = set(self.nodes_to_add) - set(self.nodes_printed)
             for i in nodes_to_add:
-                node_info = self.osmosis_conn.NodeGet(i)
+                node_info = self.reader.NodeGet(i)
                 if node_info:
                     self.NodeUpdate(node_info)
             t2 = time.time()
@@ -584,13 +594,13 @@ class OscSaxWriter(XMLGenerator):
 
 class OscPositionSaxWriter(OscSaxWriter):
 
-    def __init__(self, out, enc, osmosis_conn = None):
+    def __init__(self, out, enc, reader = None):
         if type(out) == str:
             XMLGenerator.__init__(self, open(out, "w"), enc)
         else:
             XMLGenerator.__init__(self, out, enc)
 
-        self.osmosis_conn = osmosis_conn
+        self.reader = reader
     
     def startElement(self, name, attrs):
         self._write('<' + name)
@@ -624,7 +634,7 @@ class OscPositionSaxWriter(OscSaxWriter):
         t1 = time.time()
         ways_to_add = set(self.ways_to_add) - set(self.ways_printed)
         for i in ways_to_add:
-            way_info = self.osmosis_conn.WayGetNodes(i)
+            way_info = self.reader.WayGetNodes(i)
             if way_info:
                 self.WayNew(way_info, "")
         t2 = time.time()
@@ -634,7 +644,7 @@ class OscPositionSaxWriter(OscSaxWriter):
         t1 = time.time()
         nodes_to_add = set(self.nodes_to_add) - set(self.nodes_printed)
         for i in nodes_to_add:
-            node_info = self.osmosis_conn.NodeGetPosition(i)
+            node_info = self.reader.NodeGetPosition(i)
             if node_info:
                 self.NodeNew(node_info, "")
         t2 = time.time()
@@ -671,13 +681,13 @@ class OscPositionSaxWriter(OscSaxWriter):
 
 class OscFilterSaxWriter(OscSaxWriter):
 
-    def __init__(self, out, enc, osmosis_conn = None, poly = None, check_intersection = None):
+    def __init__(self, out, enc, reader = None, poly = None, check_intersection = None):
         if type(out) == str:
             XMLGenerator.__init__(self, open(out, "w"), enc)
         else:
             XMLGenerator.__init__(self, out, enc)
 
-        self.osmosis_conn = osmosis_conn
+        self.reader = reader
         self.poly = poly
         self.check_intersection = check_intersection
     
@@ -700,10 +710,10 @@ class OscFilterSaxWriter(OscSaxWriter):
         if not data:
             return
 
-        if self.check_intersection(self.poly, data["lat"], data["lon"]):
-            action = "delete"
-        else:
+        if self.NodeWithinPoly(data["id"], data):
             self.nodes_added_in_poly.add(data["id"])
+        else:
+            action = "delete"
 
         self.startElement(action, {})
         if data[u"tag"]:
@@ -715,24 +725,24 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.Element("node", _formatData(data))
         self.endElement(action)
 
+    def NodeWithinPoly(self, id, data = None):
+        if not data:
+            if id in self.nodes_added_in_poly:
+                return True
+            data = self.reader.NodeGet(id)
+            if not data:
+                return False
+
+        return self.check_intersection(self.poly, data["lat"], data["lon"])
+
     def WayNew(self, data, action):
         if not data:
             return
 
-        way_nodes = set(data[u"nd"])
-        if way_nodes.isdisjoint(self.nodes_added_in_poly):
-            delete_way = True
-            for n in way_nodes:
-                if self.osmosis_conn.NodeExists(n):
-                    delete_way = False
-                    break
-        else:
-            delete_way = False
-
-        if delete_way:
-            action = "delete"
-        else:
+        if self.WayWithinPoly(data["id"], data):
             self.ways_added_in_poly.add(data["id"])
+        else:
+            action = "delete"
 
         self.startElement(action, {})
         self.startElement("way", _formatData(data))
@@ -743,47 +753,28 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.endElement("way")
         self.endElement(action)
 
+    def WayWithinPoly(self, id, data = None):
+        if not data:
+            if id in self.ways_added_in_poly:
+                return True
+            data = self.reader.WayGet(id)
+            if not data:
+                return False
+
+        way_nodes = data[u"nd"]
+        for n in way_nodes:
+            if self.NodeWithinPoly(n):
+                return True
+        return False
+
     def RelationNew(self, data, action):
         if not data:
             return
 
-        rel_nodes = set()
-        rel_ways = set()
-        rel_rels = set()
-        for m in data[u"member"]:
-            if m[u"type"] == u"node":
-                rel_nodes.add(m[u"ref"])
-            elif m[u"type"] == u"way":
-                rel_ways.add(m[u"ref"])
-            elif m[u"type"] == u"relation":
-                rel_rels.add(m[u"ref"])
-
-        if (rel_nodes.isdisjoint(self.nodes_added_in_poly) and
-            rel_ways.isdisjoint(self.ways_added_in_poly) and
-            rel_rels.isdisjoint(self.rels_added_in_poly)):
-            delete_rel = True
-            for n in rel_nodes:
-                if self.osmosis_conn.NodeExists(n):
-                    delete_rel = False
-                    break
-            if delete_rel:
-                for n in rel_ways:
-                    if self.osmosis_conn.WayExists(n):
-                        delete_rel = False
-                        break
-            if delete_rel:
-                for n in rel_rels:
-                    if self.osmosis_conn.RelationExists(n):
-                        delete_rel = False
-                        break
- 
+        if self.RelationWithinPoly(data["id"], data):
+            self.rels_added_in_poly.add(data["id"])
         else:
-            delete_rel = False
-
-        if delete_rel:
             action = "delete"
-        else:
-            self.rels_added_in_poly.add(int(data["id"]))
 
         self.startElement(action, {})
         self.startElement("relation", _formatData(data))
@@ -794,3 +785,24 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.Element("member", m)
         self.endElement("relation")
         self.endElement(action)
+
+    def RelationWithinPoly(self, id, data = None):
+        if not data:
+            if id in self.rels_added_in_poly:
+                return True
+            data = self.reader.RelationGet(id)
+            if not data:
+                return False
+
+        for m in data[u"member"]:
+            ref = m[u"ref"]
+            if m[u"type"] == u"node":
+                if self.NodeWithinPoly(ref):
+                    return True
+            elif m[u"type"] == u"way":
+                if self.WayWithinPoly(ref):
+                    return True
+            elif m[u"type"] == u"relation":
+                if self.RelationWithinPoly(ref):
+                    return True
+        return False

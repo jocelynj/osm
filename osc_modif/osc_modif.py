@@ -23,7 +23,6 @@
 import sys, re, urllib, time
 from pyPgSQL import PgSQL
 from modules import OsmSax
-from modules import OsmOsis
 
 ###########################################################################
 
@@ -38,15 +37,20 @@ def osc_modif(config, options):
     else:
         poly = None
 
-    osmosis_conn = OsmOsis.OsmOsis(config.dbs, config.dbp)
+    try:
+        from modules.OsmBin import OsmBin
+        reader = OsmBin("/data/work/osmbin/data")
+    except IOError:
+        from modules import OsmOsis
+        reader = OsmOsis.OsmOsis(config.dbs, config.dbp)
 
     in_osc = OsmSax.OscSaxReader(options.source)
     if options.position_only:
-        out_osc = OsmSax.OscPositionSaxWriter(options.dest, "UTF-8", osmosis_conn)
+        out_osc = OsmSax.OscPositionSaxWriter(options.dest, "UTF-8", reader)
     elif poly:
-        out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", osmosis_conn, poly, OsmGeom.check_intersection)
+        out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, poly, OsmGeom.check_intersection)
     else:
-#        out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8", osmosis_conn)
+#        out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8", reader)
         out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8")
 
     in_osc.CopyTo(out_osc)
