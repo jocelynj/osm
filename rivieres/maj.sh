@@ -40,19 +40,17 @@ DROP TABLE IF EXISTS rivers_coastline_intersections;
 CREATE TABLE rivers_coastline_intersections
 AS
 SELECT DISTINCT ON (rt.id)
-       rt.id AS id1, rt.tags->'name' AS name1,  wg.id AS way1,
+       rt.id AS id1, rt.tags->'name' AS name1, wn1.way_id AS way1,
        wg2.id AS way2
 FROM relations rt
 JOIN relation_members rm ON rm.relation_id = rt.id AND rm.member_type = 'W' AND
                             rm.member_role != 'waterbank'
-JOIN ways wg ON wg.id = rm.member_id AND ST_IsValid(wg.linestring) AND
-                St_NPoints(wg.linestring) > 1
-
+JOIN way_nodes AS wn1 ON rm.member_id = wn1.way_id
+JOIN way_nodes AS wn2 ON wn1.way_id != wn2.way_id AND
+                         wn1.node_id = wn2.node_id
+ 
 JOIN ways wg2 ON wg2.tags ? 'natural' AND wg2.tags->'natural' = 'coastline' AND
-                 ST_IsValid(wg2.linestring) AND
-                 St_NPoints(wg2.linestring) > 1 AND
-                 (wg.bbox && wg2.bbox) AND
-                 ST_Intersects(wg.linestring, wg2.linestring)
+                 wg2.id = wn2.way_id
 
 WHERE rt.tags ? 'type' AND rt.tags->'type' = 'waterway';
 ALTER TABLE rivers_coastline_intersections OWNER to osmosis;
