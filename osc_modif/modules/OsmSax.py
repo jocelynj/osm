@@ -47,6 +47,16 @@ class dummyout:
     def __del__(self):
         print self._n, self._w, self._r
 
+def GetFile(f, mode="r"):
+    if type(f) == file:
+        return f
+    elif f.endswith(".bz2"):
+        return bz2.BZ2File(f, mode)
+    elif f.endswith(".gz"):
+        return gzip.open(f, mode)
+    else:
+        return open(f, mode)
+
 ###########################################################################
 
 class OsmSaxReader(handler.ContentHandler):
@@ -58,16 +68,6 @@ class OsmSaxReader(handler.ContentHandler):
         self._filename = filename
         self._logger   = logger
         
-    def _GetFile(self):
-        if type(self._filename) == file:
-            return self._filename
-        elif self._filename.endswith(".bz2"):
-            return bz2.BZ2File(self._filename)
-        elif self._filename.endswith(".gz"):
-            return gzip.open(self._filename)
-        else:
-            return open(self._filename)
-        
     def CopyTo(self, output):
         self._debug_in_way      = False
         self._debug_in_relation = False
@@ -75,7 +75,7 @@ class OsmSaxReader(handler.ContentHandler):
         self._output = output
         parser = make_parser()
         parser.setContentHandler(self)
-        parser.parse(self._GetFile())
+        parser.parse(GetFile(self._filename))
 
     def startElement(self, name, attrs):
         attrs = attrs._attrs
@@ -153,16 +153,6 @@ class OsmTextReader:
         self._filename = filename
         self._logger   = logger
         
-    def _GetFile(self):
-        if type(self._filename) == file:
-            return self._filename
-        elif self._filename.endswith(".bz2"):
-            return bz2.BZ2File(self._filename)
-        elif self._filename.endswith(".gz"):
-            return gzip.open(self._filename)
-        else:
-            return open(self._filename)
-        
     def CopyTo(self, output):
         
         _re_eid = re.compile( " id=['\"](.+?)['\"]")
@@ -171,7 +161,7 @@ class OsmTextReader:
         _re_usr = re.compile(" user=['\"](.+?)['\"]")
         _re_tag = re.compile(" k=['\"](.+?)['\"] v=['\"](.+?)['\"]")
         
-        f = self._GetFile()
+        f = GetFile(self._filename)
         l = f.readline()
         while l:
             
@@ -241,21 +231,11 @@ class OscSaxReader(handler.ContentHandler):
         self._filename = filename
         self._logger   = logger
  
-    def _GetFile(self):
-        if type(self._filename) == file:
-            return self._filename
-        elif self._filename.endswith(".bz2"):
-            return bz2.BZ2File(self._filename)
-        elif self._filename.endswith(".gz"):
-            return gzip.open(self._filename)
-        else:
-            return open(self._filename)
-        
     def CopyTo(self, output):
         self._output = output
         parser = make_parser()
         parser.setContentHandler(self)
-        parser.parse(self._GetFile())
+        parser.parse(GetFile(self._filename))
         
     def startElement(self, name, attrs):
         attrs = attrs._attrs
@@ -457,13 +437,9 @@ def RelationToXml(data, full = False):
 class OscSaxWriter(XMLGenerator):
 
     def __init__(self, out, enc, reader = None):
-        if type(out) == str:
-            XMLGenerator.__init__(self, open(out, "w"), enc)
-        else:
-            XMLGenerator.__init__(self, out, enc)
-
+        XMLGenerator.__init__(self, GetFile(out, "w"), enc)
         self.reader = reader
-    
+
     def startElement(self, name, attrs):
         self._write('<' + name)
         for (name, value) in attrs.items():
@@ -595,11 +571,7 @@ class OscSaxWriter(XMLGenerator):
 class OscPositionSaxWriter(OscSaxWriter):
 
     def __init__(self, out, enc, reader = None):
-        if type(out) == str:
-            XMLGenerator.__init__(self, open(out, "w"), enc)
-        else:
-            XMLGenerator.__init__(self, out, enc)
-
+        XMLGenerator.__init__(self, GetFile(out, "w"), enc)
         self.reader = reader
     
     def startElement(self, name, attrs):
@@ -682,11 +654,7 @@ class OscPositionSaxWriter(OscSaxWriter):
 class OscFilterSaxWriter(OscSaxWriter):
 
     def __init__(self, out, enc, reader = None, poly = None, check_intersection = None):
-        if type(out) == str:
-            XMLGenerator.__init__(self, open(out, "w"), enc)
-        else:
-            XMLGenerator.__init__(self, out, enc)
-
+        XMLGenerator.__init__(self, GetFile(out, "w"), enc)
         self.reader = reader
         self.poly = poly
         self.check_intersection = check_intersection
