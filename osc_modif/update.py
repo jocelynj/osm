@@ -20,7 +20,7 @@
 ##                                                                       ##
 ###########################################################################
 
-import os, urllib, shutil, time, dateutil.parser, dateutil.tz
+import os, urllib, lockfile, shutil, time, dateutil.parser, dateutil.tz
 import osc_modif
 
 # configuration
@@ -29,7 +29,12 @@ orig_diff_path = os.path.join(work_path, "hour-replicate")
 modif_diff_path = os.path.join(work_path, "hour-replicate-france")
 poly_file = "france.poly"
 remote_diff_url = "http://planet.openstreetmap.org/hour-replicate/"
+lock_file = os.path.join(work_path, "hour-replicate-france.lock")
 
+
+# get lock
+lock = lockfile.FileLock(lock_file)
+lock.acquire(timeout=0)
 
 # get local sequence number
 def get_sequence_num(f):
@@ -87,3 +92,6 @@ for i in xrange(begin_sequence + 1, end_sequence + 1):
 
   os.utime(os.path.join(orig_diff_path, "state.txt"), (file_date, file_date))
   os.utime(os.path.join(modif_diff_path, "state.txt"), (file_date, file_date))
+
+# free lock
+lock.release()
