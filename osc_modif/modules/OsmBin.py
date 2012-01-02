@@ -53,7 +53,13 @@ class MissingDataError(Exception):
     def __init__(self, value):
         self.value = value
     def __str__(self):
-        return repr(self.value)
+        return "MissingDataError(%s)"%str(self.value)
+
+class RelationLoopError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return "RelationLoopError(%s)"%str(self.value)
 
 ###########################################################################
 ## Common functions
@@ -309,7 +315,7 @@ class OsmBin:
         except:
             pass
 
-    def RelationFullRecur(self, RelationId, WayNodes = True):
+    def RelationFullRecur(self, RelationId, WayNodes = True, RaiseOnLoop = True, RemoveSubarea = False, RecurControl = []):
         rel = self.RelationGet(RelationId)
         dta = [{"type": "relation", "data": rel}]
         for m in rel["member"]:
@@ -324,9 +330,17 @@ class OsmBin:
                     for n in way["nd"]:
                         dta.append({"type": "node", "data": self.NodeGet(n)})
             elif m["type"] == "relation":
-                if [x for x in dta if x["type"]=="relation" and x["data"]["id"]==m["ref"]]:
+                if m["ref"] == RelationId:
+                    if not RaiseOnLoop:
+                        continue
+                    raise RelationLoopError('self member '+str(RelationId))
+                if m["ref"] in RecurControl:
+                    if not RaiseOnLoop:
+                        continue
+                    raise RelationLoopError('member loop '+str(RecurControl+[RelationId, m["ref"]]))
+                if RemoveSubarea and m["role"] in [u"subarea", u"region"]:
                     continue
-                dta += self.RelationFullRecur(m["ref"], WayNodes)
+                dta += self.RelationFullRecur(m["ref"], WayNodes = WayNodes, RaiseOnLoop = RaiseOnLoop, RecurControl = RecurControl+[RelationId])
         return dta
 
     #######################################################################
