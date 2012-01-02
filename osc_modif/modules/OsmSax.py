@@ -754,8 +754,11 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.endElement("relation")
         self.endElement(action)
 
-    def RelationWithinPoly(self, id, data = None):
+    def RelationWithinPoly(self, id, data = None, rec_level = 0):
         if not data:
+            if rec_level > 30:
+                print "recursion too deep on id=%d" % id
+                return False
             if id in self.rels_added_in_poly:
                 return True
             data = self.reader.RelationGet(id)
@@ -771,6 +774,6 @@ class OscFilterSaxWriter(OscSaxWriter):
                 if self.WayWithinPoly(ref):
                     return True
             elif m[u"type"] == u"relation":
-                if self.RelationWithinPoly(ref):
+                if self.RelationWithinPoly(ref, rec_level=rec_level + 1):
                     return True
         return False
