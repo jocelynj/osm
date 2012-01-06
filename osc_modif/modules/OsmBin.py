@@ -68,6 +68,8 @@ _CstMax2 = 2**16-1
 _CstMax4 = 2**32-1
 
 def _Str5ToInt(txt):
+    if len(txt) != 5:
+        return None
     # 0 to 1.099.511.627.776
     i0 = ord(txt[0])
     i1 = ord(txt[1])
@@ -133,9 +135,12 @@ def _CoordToStr4(coord):
 
 def InitFolder(folder):
 
-    nb_node_max = 2**32
-    nb_way_max  = 2**32
+    nb_node_max = 2**4
+    nb_way_max  = 2**4
     
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
     # create node.crd
     print "Creating node.crd"
     groupe = 2**10
@@ -217,6 +222,8 @@ class OsmBin:
         data["id"] = NodeId
         self._fNode_crd.seek(8*data[u"id"])
         read = self._fNode_crd.read(8)
+        if len(read) != 8:
+            return None
         data["lat"] = _Str4ToCoord(read[:4])
         data["lon"] = _Str4ToCoord(read[4:])
         data["tag"] = {}
