@@ -46,7 +46,7 @@ JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_
                          relation_members.member_role = ''
 JOIN way_nodes ON relation_members.member_id = way_nodes.way_id
 JOIN nodes ON way_nodes.node_id = nodes.id
-WHERE nodes.tags ? 'highway'
+WHERE nodes.tags ? 'highway' AND nodes.tags->'highway' != 'milestone'
 GROUP BY autoroutes.id, osm_autoroutes.relation_id, osm_autoroutes.ref,
           nodes.tags->'ref', nodes.tags->'name', nodes.tags->'exit_to';
 
