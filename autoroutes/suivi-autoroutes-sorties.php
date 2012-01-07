@@ -53,7 +53,7 @@ SELECT relation_id, relation_ref,
        ref, name, exit_to,
        total, nodes_id
 FROM osm_autoroutes_sorties
-ORDER BY id, int4(regexp_replace(ref, '^([0-9]*).*', E'0\\\\1')), name
+ORDER BY id, relation_ref, int4(regexp_replace(ref, '^([0-9]*).*', E'0\\\\1')), ref, name
 ";
 
 $prev_autoroute = -1;

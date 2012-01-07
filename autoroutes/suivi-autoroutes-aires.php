@@ -53,7 +53,7 @@ SELECT relation_id, relation_ref,
        (SELECT COUNT(a.node_id) FROM osm_autoroutes_aires a
         WHERE a.relation_id = b.relation_id) AS num_aires
 FROM osm_autoroutes_aires b
-ORDER BY id, name;
+ORDER BY id, relation_ref, name;
 ";
 
 $prev_autoroute = -1;
