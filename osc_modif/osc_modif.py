@@ -21,7 +21,6 @@
 ###########################################################################
 
 import sys, re, urllib, time
-from pyPgSQL import PgSQL
 from modules import OsmSax
 
 ###########################################################################
@@ -54,6 +53,9 @@ def osc_modif(config, options):
         out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8")
 
     in_osc.CopyTo(out_osc)
+    del in_osc
+    del out_osc
+    del reader
 
 
 if __name__ == "__main__":

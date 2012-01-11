@@ -24,7 +24,7 @@ import os, urllib, lockfile, shutil, time, dateutil.parser, dateutil.tz
 import osc_modif
 
 # configuration
-work_path = "/data/work/jocelyn"
+work_path = "/data/work/osmbin"
 orig_diff_path = os.path.join(work_path, "hour-replicate")
 modif_diff_path = os.path.join(work_path, "hour-replicate-france")
 poly_file = "france.poly"
@@ -61,13 +61,16 @@ def update_symlink(src, dst):
   os.symlink(src, dst)
 
 for i in xrange(begin_sequence + 1, end_sequence + 1):
-  print i
-#  for path in (orig_diff_path, modif_diff_path):
-#    os.makedirs(os.path.join(path, "%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000)))
+  print time.strftime("%H:%M:%S"), i
+  for path in (orig_diff_path, modif_diff_path):
+    tmp_path = os.path.join(path, "%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000))
+    if not os.path.exists(tmp_path):
+      os.makedirs(tmp_path)
 
   file_location = "%03d/%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000, i % 1000)
 
   # download diff file
+  print time.strftime("%H:%M:%S"), "  download diff"
   orig_diff_file = os.path.join(orig_diff_path, file_location)
   for ext in (".osc.gz", ".state.txt"):
     (filename, headers) = urllib.urlretrieve(os.path.join(remote_diff_url, file_location) + ext, orig_diff_file + ext)
@@ -82,11 +85,13 @@ for i in xrange(begin_sequence + 1, end_sequence + 1):
     position_only = False
 
   # apply polygon
+  print time.strftime("%H:%M:%S"), "  apply polygon"
   osc_modif.osc_modif(None, osc_modif_options)
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
   shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
 
   # update symbolic links to state.txt
+  print time.strftime("%H:%M:%S"), "  update links to state.txt"
   update_symlink(orig_diff_file + ".state.txt", os.path.join(orig_diff_path, "state.txt"))
   update_symlink(modif_diff_file + ".state.txt", os.path.join(modif_diff_path, "state.txt"))
 
