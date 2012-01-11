@@ -47,7 +47,7 @@
 # print bin.RelationGet(12)
 # print bin.RelationFullRecur(12)
 
-import sys, os
+import sys, os, lockfile
 
 class MissingDataError(Exception):
     def __init__(self, value):
@@ -183,6 +183,9 @@ class OsmBin:
         self._fWay_data      = open(os.path.join(folder, "way.data"), {"w":"rb+", "r":"r"}[mode])
         self._fWay_data_size = os.stat(os.path.join(folder, "way.data")).st_size
         if self._mode=="w":
+            lock_file = os.path.join(folder, "lock")
+            self._lock = lockfile.FileLock(lock_file)
+            self._lock.acquire(timeout=0)
             self._ReadFree()
         
     def __del__(self):
@@ -194,6 +197,7 @@ class OsmBin:
             pass
         if self._mode=="w":
             self._WriteFree()
+            self._lock.release()
         
     def _ReadFree(self):
         self._free = {}
@@ -208,12 +212,22 @@ class OsmBin:
             self._free[int(line[1])].append(int(line[0]))
 
     def _WriteFree(self):
+        try:
+            free = self._free
+        except AttributeError:
+            return
         f = open(os.path.join(self._folder, "way.free"), 'w')
         for nbn in self._free:
             for ptr in self._free[nbn]:
                 f.write("%d;%d\n"%(ptr, nbn))
         f.close()
         
+    def begin(self):
+        pass
+
+    def end(self):
+        pass
+
     #######################################################################
     ## node functions
         
@@ -238,7 +252,10 @@ class OsmBin:
     NodeUpdate = NodeCreate
 
     def NodeDelete(self, data):
-        return
+        LatStr4 = _IntToStr4(0)
+        LonStr4 = _IntToStr4(0)
+        self._fNode_crd.seek(8*data[u"id"])
+        self._fNode_crd.write(LatStr4+LonStr4)
 
     #######################################################################
     ## way functions
@@ -286,7 +303,11 @@ class OsmBin:
         # Libère la place
         self._fWay_data.seek(AdrWay)
         nbn = _Str2ToInt(self._fWay_data.read(2))
-        self._free[nbn].append(AdrWay)
+        try:
+            self._free[nbn].append(AdrWay)
+        except KeyError:
+            print "Cannot access free[%d] for way id=%d, idx=%d" % (nbn, data[u"id"], AdrWay)
+            raise
         # Enregistre la suppression
         self._fWay_idx.seek(5*data[u"id"])
         self._fWay_idx.write(_IntToStr5(0))
@@ -351,6 +372,14 @@ class OsmBin:
         return dta
 
     #######################################################################
+
+    def CopyWayTo(self, output):
+        self._fWay_idx.seek(0,2)
+        way_idx_size = self._fWay_idx.tell()
+        for i in xrange(way_idx_size / 5):
+            way = self.WayGet(i)
+            if way:
+                output.WayCreate(way)
     
     def CopyRelationTo(self, output):
         for i in os.listdir(self._reldir):
