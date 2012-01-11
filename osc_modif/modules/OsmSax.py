@@ -466,7 +466,6 @@ class OscSaxWriter(XMLGenerator):
 
     def end(self):
         t2 = time.time()
-        print ".osc read took: ", t2 - self.t1
 
         if self.reader:
             # add ways that were not modified, but included by ways or relations
@@ -600,7 +599,6 @@ class OscPositionSaxWriter(OscSaxWriter):
 
     def end(self):
         t2 = time.time()
-        print ".osc read took: ", t2 - self.t1
 
         # add ways that were not modified, but included by ways or relations
         t1 = time.time()
@@ -653,23 +651,29 @@ class OscPositionSaxWriter(OscSaxWriter):
 
 class OscFilterSaxWriter(OscSaxWriter):
 
-    def __init__(self, out, enc, reader = None, poly = None, check_intersection = None):
+    def __init__(self, out, enc, reader = None, check_intersection = None, poly = None, poly_buffered = None):
         XMLGenerator.__init__(self, GetFile(out, "w"), enc)
         self.reader = reader
-        self.poly = poly
         self.check_intersection = check_intersection
+        self.poly = []
+        self.poly.append(poly)
+        self.poly.append(poly_buffered)
+        self.poly_num = 2
     
     def begin(self):
         self.startElement("osmChange", { "version": "0.6",
                                          "generator": "OsmSax" })
-        self.nodes_added_in_poly = set()
-        self.ways_added_in_poly = set()
-        self.rels_added_in_poly = set()
+        self.nodes_added_in_poly = []
+        self.ways_added_in_poly = []
+        self.rels_added_in_poly = []
+        for i in xrange(self.poly_num):
+            self.nodes_added_in_poly.append(set())
+            self.ways_added_in_poly.append(set())
+            self.rels_added_in_poly.append(set())
         self.t1 = time.time()
 
     def end(self):
         t2 = time.time()
-        print ".osc read took: ", t2 - self.t1
 
         self.endElement("osmChange")
 
@@ -678,9 +682,12 @@ class OscFilterSaxWriter(OscSaxWriter):
         if not data:
             return
 
-        if self.NodeWithinPoly(data["id"], data):
-            self.nodes_added_in_poly.add(data["id"])
+        if self.NodeWithinPoly(0, data["id"], data):
+            self.nodes_added_in_poly[0].add(data["id"])
+        elif self.poly[1] and not self.NodeWithinPoly(1, data["id"], data):
+            return
         else:
+            self.nodes_added_in_poly[1].add(data["id"])
             action = "delete"
 
         self.startElement(action, {})
@@ -693,23 +700,26 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.Element("node", _formatData(data))
         self.endElement(action)
 
-    def NodeWithinPoly(self, id, data = None):
+    def NodeWithinPoly(self, poly_idx, id, data = None):
         if not data:
-            if id in self.nodes_added_in_poly:
+            if id in self.nodes_added_in_poly[poly_idx]:
                 return True
             data = self.reader.NodeGet(id)
             if not data:
                 return False
 
-        return self.check_intersection(self.poly, data["lat"], data["lon"])
+        return self.check_intersection(self.poly[poly_idx], data["lat"], data["lon"])
 
     def WayNew(self, data, action):
         if not data:
             return
 
-        if self.WayWithinPoly(data["id"], data):
-            self.ways_added_in_poly.add(data["id"])
+        if self.WayWithinPoly(0, data["id"], data):
+            self.ways_added_in_poly[0].add(data["id"])
+        elif self.poly[1] and not self.WayWithinPoly(1, data["id"], data):
+            return
         else:
+            self.ways_added_in_poly[1].add(data["id"])
             action = "delete"
 
         self.startElement(action, {})
@@ -721,9 +731,9 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.endElement("way")
         self.endElement(action)
 
-    def WayWithinPoly(self, id, data = None):
+    def WayWithinPoly(self, poly_idx, id, data = None):
         if not data:
-            if id in self.ways_added_in_poly:
+            if id in self.ways_added_in_poly[poly_idx]:
                 return True
             data = self.reader.WayGet(id)
             if not data:
@@ -731,7 +741,7 @@ class OscFilterSaxWriter(OscSaxWriter):
 
         way_nodes = data[u"nd"]
         for n in way_nodes:
-            if self.NodeWithinPoly(n):
+            if self.NodeWithinPoly(poly_idx, n):
                 return True
         return False
 
@@ -739,9 +749,12 @@ class OscFilterSaxWriter(OscSaxWriter):
         if not data:
             return
 
-        if self.RelationWithinPoly(data["id"], data):
-            self.rels_added_in_poly.add(data["id"])
+        if self.RelationWithinPoly(0, data["id"], data):
+            self.rels_added_in_poly[0].add(data["id"])
+        elif self.poly[1] and not self.RelationWithinPoly(1, data["id"], data):
+            return
         else:
+            self.rels_added_in_poly[1].add(data["id"])
             action = "delete"
 
         self.startElement(action, {})
@@ -754,12 +767,12 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.endElement("relation")
         self.endElement(action)
 
-    def RelationWithinPoly(self, id, data = None, rec_level = 0):
+    def RelationWithinPoly(self, poly_idx, id, data = None, rec_level = 0):
         if not data:
             if rec_level > 30:
                 print "recursion too deep on id=%d" % id
                 return False
-            if id in self.rels_added_in_poly:
+            if id in self.rels_added_in_poly[poly_idx]:
                 return True
             data = self.reader.RelationGet(id)
             if not data:
@@ -768,12 +781,12 @@ class OscFilterSaxWriter(OscSaxWriter):
         for m in data[u"member"]:
             ref = m[u"ref"]
             if m[u"type"] == u"node":
-                if self.NodeWithinPoly(ref):
+                if self.NodeWithinPoly(poly_idx, ref):
                     return True
             elif m[u"type"] == u"way":
-                if self.WayWithinPoly(ref):
+                if self.WayWithinPoly(poly_idx, ref):
                     return True
             elif m[u"type"] == u"relation":
-                if self.RelationWithinPoly(ref, rec_level=rec_level + 1):
+                if self.RelationWithinPoly(poly_idx, ref, rec_level=rec_level + 1):
                     return True
         return False

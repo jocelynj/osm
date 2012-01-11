@@ -32,6 +32,7 @@ def osc_modif(config, options):
         f = open(options.poly, "r")
         name = f.readline().strip()
         poly = OsmGeom.read_multipolygon(f)
+        poly_buffered = poly.buffer(0.1, 8)
         f.close()
     else:
         poly = None
@@ -47,7 +48,7 @@ def osc_modif(config, options):
     if options.position_only:
         out_osc = OsmSax.OscPositionSaxWriter(options.dest, "UTF-8", reader)
     elif poly:
-        out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, poly, OsmGeom.check_intersection)
+        out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, OsmGeom.check_intersection, poly, poly_buffered)
     else:
 #        out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8", reader)
         out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8")
