@@ -22,6 +22,8 @@
 
 import os, urllib, lockfile, shutil, time, dateutil.parser, dateutil.tz
 import osc_modif
+from modules import OsmBin
+from modules import OsmSax
 
 # configuration
 work_path = "/data/work/osmbin"
@@ -93,6 +95,14 @@ for i in xrange(begin_sequence + 1, end_sequence + 1):
   osc_modif.osc_modif(None, osc_modif_options)
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
   shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
+
+  # update osmbin
+  print time.strftime("%H:%M:%S"), "  update osmbin"
+  i = OsmSax.OscSaxReader(orig_diff_file + ".osc.gz")
+  o = OsmBin.OsmBin("/data/work/osmbin/data", "w")
+  i.CopyTo(o)
+  del o
+  del i
 
   # update symbolic links to state.txt
   print time.strftime("%H:%M:%S"), "  update links to state.txt"
