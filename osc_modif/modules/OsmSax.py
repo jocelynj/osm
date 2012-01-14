@@ -573,21 +573,6 @@ class OscPositionSaxWriter(OscSaxWriter):
         XMLGenerator.__init__(self, GetFile(out, "w"), enc)
         self.reader = reader
     
-    def startElement(self, name, attrs):
-        self._write('<' + name)
-        for (name, value) in attrs.items():
-            self._write(' %s=%s' % (name, quoteattr(value)))
-        self._write('>\n')
-        
-    def endElement(self, name):
-        self._write('</%s>\n' % name)
-    
-    def Element(self, name, attrs):
-        self._write('<' + name)
-        for (name, value) in attrs.items():
-            self._write(' %s=%s' % (name, quoteattr(value)))
-        self._write(' />\n')
-
     def begin(self):
         self.startElement("osmChange", { "version": "0.6",
                                          "generator": "OsmSax" })
