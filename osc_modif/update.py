@@ -29,7 +29,7 @@ from modules import OsmSax
 work_path = "/data/work/osmbin"
 orig_diff_path = os.path.join(work_path, "hour-replicate")
 modif_diff_path = os.path.join(work_path, "hour-replicate-france")
-poly_file = "france.poly"
+poly_file = "polygons/france.poly"
 remote_diff_url = "http://planet.openstreetmap.org/hour-replicate/"
 lock_file = os.path.join(work_path, "hour-replicate-france.lock")
 
