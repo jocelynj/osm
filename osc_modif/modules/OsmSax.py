@@ -663,6 +663,7 @@ class OscFilterSaxWriter(OscSaxWriter):
     def begin(self):
         self.startElement("osmChange", { "version": "0.6",
                                          "generator": "OsmSax" })
+        self._prev_action = ""
         self.nodes_added_in_poly = []
         self.ways_added_in_poly = []
         self.rels_added_in_poly = []
@@ -675,6 +676,8 @@ class OscFilterSaxWriter(OscSaxWriter):
     def end(self):
         t2 = time.time()
 
+        if self._prev_action != "":
+            self.endElement(self._prev_action)
         self.endElement("osmChange")
 
 
@@ -690,7 +693,12 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.nodes_added_in_poly[1].add(data["id"])
             action = "delete"
 
-        self.startElement(action, {})
+        if action != self._prev_action:
+            if self._prev_action != "":
+                self.endElement(self._prev_action)
+            self.startElement(action, {})
+            self._prev_action = action
+
         if data[u"tag"]:
             self.startElement("node", _formatData(data))
             for (k, v) in data[u"tag"].items():
@@ -698,7 +706,6 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.endElement("node")
         else:
             self.Element("node", _formatData(data))
-        self.endElement(action)
 
     def NodeWithinPoly(self, poly_idx, id, data = None):
         if not data:
@@ -722,14 +729,21 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.ways_added_in_poly[1].add(data["id"])
             action = "delete"
 
-        self.startElement(action, {})
+        if action != self._prev_action:
+            if self._prev_action != "":
+                self.endElement(self._prev_action)
+            self.startElement(action, {})
+            self._prev_action = action
+
         self.startElement("way", _formatData(data))
         for (k, v) in data[u"tag"].items():
             self.Element("tag", {"k":k, "v":v})
         for n in data[u"nd"]:
             self.Element("nd", {"ref":str(n)})
         self.endElement("way")
-        self.endElement(action)
+        if action != self._prev_action:
+            self.endElement(action)
+            self._prev_action = action
 
     def WayWithinPoly(self, poly_idx, id, data = None):
         if not data:
@@ -757,7 +771,12 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.rels_added_in_poly[1].add(data["id"])
             action = "delete"
 
-        self.startElement(action, {})
+        if action != self._prev_action:
+            if self._prev_action != "":
+                self.endElement(self._prev_action)
+            self.startElement(action, {})
+            self._prev_action = action
+
         self.startElement("relation", _formatData(data))
         for (k, v) in data[u"tag"].items():
             self.Element("tag", {"k":k, "v":v})
@@ -765,7 +784,6 @@ class OscFilterSaxWriter(OscSaxWriter):
             m[u"ref"] = str(m[u"ref"])
             self.Element("member", m)
         self.endElement("relation")
-        self.endElement(action)
 
     def RelationWithinPoly(self, poly_idx, id, data = None, rec_rel = []):
         if not data:
