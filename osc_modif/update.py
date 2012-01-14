@@ -73,7 +73,11 @@ for i in xrange(begin_sequence + 1, end_sequence + 1):
   print time.strftime("%H:%M:%S"), "  download diff"
   orig_diff_file = os.path.join(orig_diff_path, file_location)
   for ext in (".osc.gz", ".state.txt"):
-    (filename, headers) = urllib.urlretrieve(os.path.join(remote_diff_url, file_location) + ext, orig_diff_file + ext)
+    try:
+      (filename, headers) = urllib.urlretrieve(os.path.join(remote_diff_url, file_location) + ext, orig_diff_file + ext)
+    except IOError:
+      lock.release()
+      raise
     file_date = time.mktime(dateutil.parser.parse(headers["Last-Modified"]).astimezone(dateutil.tz.tzlocal()).timetuple())
     os.utime(orig_diff_file + ext, (file_date, file_date))
 
