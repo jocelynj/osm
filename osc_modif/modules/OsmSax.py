@@ -670,10 +670,10 @@ class OscFilterSaxWriter(OscSaxWriter):
         if not data:
             return
 
+        if not self.NodeWithinPoly(1, data["id"], data):
+            return
         if self.NodeWithinPoly(0, data["id"], data):
             self.nodes_added_in_poly[0].add(data["id"])
-        elif self.poly[1] and not self.NodeWithinPoly(1, data["id"], data):
-            return
         else:
             self.nodes_added_in_poly[1].add(data["id"])
             action = "delete"
@@ -706,10 +706,10 @@ class OscFilterSaxWriter(OscSaxWriter):
         if not data:
             return
 
+        if not self.WayWithinPoly(1, data["id"], data):
+            return
         if self.WayWithinPoly(0, data["id"], data):
             self.ways_added_in_poly[0].add(data["id"])
-        elif self.poly[1] and not self.WayWithinPoly(1, data["id"], data):
-            return
         else:
             self.ways_added_in_poly[1].add(data["id"])
             action = "delete"
