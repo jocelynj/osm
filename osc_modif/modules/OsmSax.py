@@ -672,10 +672,10 @@ class OscFilterSaxWriter(OscSaxWriter):
 
         if not self.NodeWithinPoly(1, data["id"], data):
             return
+        self.nodes_added_in_poly[1].add(data["id"])
         if self.NodeWithinPoly(0, data["id"], data):
             self.nodes_added_in_poly[0].add(data["id"])
         else:
-            self.nodes_added_in_poly[1].add(data["id"])
             action = "delete"
 
         if action != self._prev_action:
@@ -708,10 +708,10 @@ class OscFilterSaxWriter(OscSaxWriter):
 
         if not self.WayWithinPoly(1, data["id"], data):
             return
+        self.ways_added_in_poly[1].add(data["id"])
         if self.WayWithinPoly(0, data["id"], data):
             self.ways_added_in_poly[0].add(data["id"])
         else:
-            self.ways_added_in_poly[1].add(data["id"])
             action = "delete"
 
         if action != self._prev_action:
@@ -748,12 +748,12 @@ class OscFilterSaxWriter(OscSaxWriter):
         if not data:
             return
 
+        if not self.RelationWithinPoly(1, data["id"], data):
+            return
+        self.rels_added_in_poly[1].add(data["id"])
         if self.RelationWithinPoly(0, data["id"], data):
             self.rels_added_in_poly[0].add(data["id"])
-        elif self.poly[1] and not self.RelationWithinPoly(1, data["id"], data):
-            return
         else:
-            self.rels_added_in_poly[1].add(data["id"])
             action = "delete"
 
         if action != self._prev_action:
