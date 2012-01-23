@@ -22,7 +22,7 @@ SELECT rt.id AS relation_id, COUNT(w.id) AS num_way,
 FROM relations rt
 JOIN relation_members ON rt.id = relation_members.relation_id AND
                          relation_members.member_type = 'W' AND
-                         relation_members.member_role = ''
+                         relation_members.member_role != 'link'
 JOIN ways w ON relation_members.member_id = w.id
 
 WHERE rt.tags->'type' = 'route' AND rt.tags->'route' = 'road' AND
@@ -43,7 +43,7 @@ FROM osm_autoroutes
 JOIN autoroutes ON osm_autoroutes.ref = autoroutes.ref
 JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_id AND
                          relation_members.member_type = 'W' AND
-                         relation_members.member_role = ''
+                         relation_members.member_role != 'link'
 JOIN way_nodes ON relation_members.member_id = way_nodes.way_id
 JOIN nodes ON way_nodes.node_id = nodes.id
 WHERE nodes.tags ? 'highway' AND nodes.tags->'highway' NOT IN ('milestone', 'emergency_bay',
@@ -64,7 +64,7 @@ FROM osm_autoroutes
 JOIN autoroutes ON osm_autoroutes.ref = autoroutes.ref
 JOIN relation_members ON osm_autoroutes.relation_id = relation_members.relation_id AND
                          relation_members.member_type = 'W' AND
-                         relation_members.member_role = ''
+                         relation_members.member_role != 'link'
 JOIN ways ON ways.id = relation_members.member_id
 JOIN nodes ON ST_Distance(st_transform(nodes.geom,2154),
                           st_transform(linestring,2154)) < 1000
