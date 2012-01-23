@@ -78,12 +78,13 @@ $total_l_osm = 0;
 $prev_ref = "";
 
 $query_autoroutes="
-SELECT autoroutes.ref, autoroutes.longueur,
+SELECT (CASE WHEN autoroutes.ref IS NOT NULL THEN autoroutes.ref ELSE osm_autoroutes.ref END),
+       autoroutes.longueur,
        relation_id, km AS osm_longueur, name, num_sections,
        km_oneway_yes, km_oneway_no, km_oneway_null,
        km_toll_yes, km_toll_no, km_toll_null
 FROM autoroutes
-LEFT JOIN osm_autoroutes ON autoroutes.ref = osm_autoroutes.ref
+FULL OUTER JOIN osm_autoroutes ON autoroutes.ref = osm_autoroutes.ref
 ORDER BY autoroutes.id, autoroutes.ref;
 ";
 
@@ -94,7 +95,11 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   if ($autoroute->relation_id > 0) {
     $total_l_osm += $autoroute->osm_longueur;
     $longueur_autoroute_dans_osm=round($autoroute->osm_longueur,1);
-    $avancee=round($autoroute->osm_longueur/$autoroute->longueur*100,1);
+    if ($autoroute->longueur != 0) {
+      $avancee = round($autoroute->osm_longueur/$autoroute->longueur*100,1);
+    } else {
+      $avancee = "-";
+    }
     $osm_id=$autoroute->relation_id;
     $osm_id_lien="<a href='http://www.openstreetmap.org/browse/relation/$osm_id'>$osm_id</a>
     <a href='http://localhost:8111/import?url=http://api.openstreetmap.org/api/0.6/relation/$osm_id/full' target='suivi-josm'>josm</a>";
