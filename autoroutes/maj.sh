@@ -17,7 +17,11 @@ SELECT rt.id AS relation_id, COUNT(w.id) AS num_way,
        SUM(st_length(st_transform(linestring,2154))) / 1000 / 2 as km,
        SUM(st_length(st_transform((CASE WHEN w.tags->'oneway'='yes' THEN linestring ELSE NULL END),2154))) / 1000 as km_oneway_yes,
        SUM(st_length(st_transform((CASE WHEN w.tags->'oneway'='no' THEN linestring ELSE NULL END),2154))) / 1000 as km_oneway_no,
-       SUM(st_length(st_transform((CASE WHEN NOT w.tags ? 'oneway' THEN linestring ELSE NULL END),2154))) / 1000 as km_oneway_null
+       SUM(st_length(st_transform((CASE WHEN NOT w.tags ? 'oneway' THEN linestring ELSE NULL END),2154))) / 1000 as km_oneway_null,
+
+       SUM(st_length(st_transform((CASE WHEN w.tags->'toll'='yes' THEN linestring ELSE NULL END),2154))) / 1000 as km_toll_yes,
+       SUM(st_length(st_transform((CASE WHEN w.tags->'toll'='no' THEN linestring ELSE NULL END),2154))) / 1000 as km_toll_no,
+       SUM(st_length(st_transform((CASE WHEN NOT w.tags ? 'toll' THEN linestring ELSE NULL END),2154))) / 1000 as km_toll_null
 
 FROM relations rt
 JOIN relation_members ON rt.id = relation_members.relation_id AND

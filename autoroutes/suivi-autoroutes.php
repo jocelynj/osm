@@ -52,6 +52,7 @@ td.big { background: orange; }
   <th></th>
   <th colspan=3>Infos dans OSM</th>
   <th colspan=4>km d'oneway dans OSM</th>
+  <th colspan=3>km de toll dans OSM</th>
 </tr>
 <tr>
   <th>Autoroute</th>
@@ -66,6 +67,9 @@ td.big { background: orange; }
   <th>no</th>
   <th>(null)</th>
   <th>\"somme\"</th>
+  <th>yes</th>
+  <th>no</th>
+  <th>(null)</th>
 </tr>\n";
 
 $csv = "\n";
@@ -76,7 +80,8 @@ $prev_ref = "";
 $query_autoroutes="
 SELECT autoroutes.ref, autoroutes.longueur,
        relation_id, km AS osm_longueur, name, num_sections,
-       km_oneway_yes, km_oneway_no, km_oneway_null
+       km_oneway_yes, km_oneway_no, km_oneway_null,
+       km_toll_yes, km_toll_no, km_toll_null
 FROM autoroutes
 LEFT JOIN osm_autoroutes ON autoroutes.ref = osm_autoroutes.ref
 ORDER BY autoroutes.id, autoroutes.ref;
@@ -102,6 +107,12 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     if ($autoroute->km_oneway_null) { $km_oneway_null = round($autoroute->km_oneway_null,1); }
     else { $km_oneway_null = ""; }
     $km_oneway_sum = round($autoroute->km_oneway_no + $autoroute->km_oneway_null + $autoroute->km_oneway_yes/2, 1);
+    if ($autoroute->km_toll_yes) { $km_toll_yes = round($autoroute->km_toll_yes,1); }
+    else { $km_toll_yes = ""; }
+    if ($autoroute->km_toll_no) { $km_toll_no = round($autoroute->km_toll_no,1); }
+    else { $km_toll_no = ""; }
+    if ($autoroute->km_toll_null) { $km_toll_null = round($autoroute->km_toll_null,1); }
+    else { $km_toll_null = ""; }
   }
   else
   {
@@ -114,6 +125,9 @@ while($autoroute=pg_fetch_object($res_autoroutes))
     $km_oneway_no = "";
     $km_oneway_null = "";
     $km_oneway_sum = "";
+    $km_toll_yes = "";
+    $km_toll_no = "";
+    $km_toll_null = "";
   }
   if ($prev_ref != $autoroute->ref) {
     $total_l += $autoroute->longueur;
@@ -150,6 +164,9 @@ while($autoroute=pg_fetch_object($res_autoroutes))
   print "  <td>$km_oneway_no</td>\n";
   print "  <td>$km_oneway_null</td>\n";
   print "  <td>$km_oneway_sum</td>\n";
+  print "  <td>$km_toll_yes</td>\n";
+  print "  <td>$km_toll_no</td>\n";
+  print "  <td>$km_toll_null</td>\n";
   print "</tr>\n";
   $csv .= "$autoroute->ref;$osm_id;$l_autoroute;$longueur_autoroute_dans_osm;$avancee %;$num_sections;$autoroute->name\n";
 }
