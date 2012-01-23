@@ -3,13 +3,14 @@
 . ../../config
 
 for i in `cat liste | sort -n -t"A" -k2`; do
-  if [ ! -e Autoroute_française_$i ]; then
-    wget http://fr.wikipedia.org/wiki/Autoroute_française_$i
+  page="Autoroute_${i}_(France)"
+  if [ ! -e "$page" ]; then
+    wget "http://fr.wikipedia.org/wiki/$page"
   fi
 
   id=`echo $i | sed "s/A\([0-9]*\).*/\1/"`
   ref=`echo $i | sed "s/A\([0-9]*.*\)/A \1/"`
-  km=`grep -m1 -A1 '<th scope="row">Longueur' Autoroute_française_$i | grep td | sed "s/<td>\([0-9.,]*\).*/\1/" | tr "," "." | tr -d "\n"`
+  km=`grep -m1 -A1 '<th scope="row">Longueur' "$page" | grep td | sed "s/<td>\([0-9.,]*\).*/\1/" | tr "," "." | tr -d "\n"`
   if [ "x$km" = "x" ]; then
     km=0
   fi
