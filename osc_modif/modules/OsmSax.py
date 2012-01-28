@@ -731,7 +731,7 @@ class OscFilterSaxWriter(OscSaxWriter):
             self._prev_action = action
 
     def WayWithinPoly(self, poly_idx, id, data = None):
-        if not data:
+        if not data or len(data["nd"]) == 0:
             if id in self.ways_added_in_poly[poly_idx]:
                 return True
             data = self.reader.WayGet(id)
@@ -771,7 +771,7 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.endElement("relation")
 
     def RelationWithinPoly(self, poly_idx, id, data = None, rec_rel = []):
-        if not data:
+        if not data or len(data["member"]) == 0:
             if id in rec_rel:
                 print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
                 return False
