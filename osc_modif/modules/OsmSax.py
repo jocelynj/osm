@@ -668,6 +668,7 @@ class OscFilterSaxWriter(OscSaxWriter):
 
     def NodeNew(self, data, action):
         if not data:
+            print "NodeNew - no data found..."
             return
 
         if not self.NodeWithinPoly(1, data["id"], data):
@@ -704,6 +705,7 @@ class OscFilterSaxWriter(OscSaxWriter):
 
     def WayNew(self, data, action):
         if not data:
+            print "WayNew - no data found..."
             return
 
         if not self.WayWithinPoly(1, data["id"], data):
@@ -746,6 +748,7 @@ class OscFilterSaxWriter(OscSaxWriter):
 
     def RelationNew(self, data, action):
         if not data:
+            print "RelationNew - no data found..."
             return
 
         if not self.RelationWithinPoly(1, data["id"], data):
