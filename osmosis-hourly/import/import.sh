@@ -4,7 +4,7 @@ set -e
 
 . ../../config
 
-$OSMOSIS --read-xml file=$1 --buffer --write-pgsql-dump directory="$WORKDIR/tmp" enableBboxBuilder=yes enableLinestringBuilder=yes
+$OSMOSIS --read-xml file=$1 --buffer --write-pgsql-dump directory="$WORKDIR/tmp" enableBboxBuilder=yes
 $OSMOSIS --truncate-pgsql database="$DATABASE" user="$USER" password="$PASS"
 
 local_dir=`pwd`

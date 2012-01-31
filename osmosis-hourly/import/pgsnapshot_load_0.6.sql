@@ -30,7 +30,7 @@ CREATE INDEX idx_relation_members_member_id_and_type ON relation_members USING b
 
 
 -- Index the way bounding box column.
-CREATE INDEX idx_ways_bbox ON ways USING gist (bbox);
+-- CREATE INDEX idx_ways_bbox ON ways USING gist (bbox);
 CREATE INDEX idx_ways_linestring ON ways USING gist (linestring);
 
 -- Update all clustered tables because it doesn't happen implicitly.
