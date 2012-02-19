@@ -54,7 +54,11 @@ def update():
   f.close()
 
   # get remote sequence number
-  f = urllib.urlopen(os.path.join(remote_diff_url, "state.txt"), "r")
+  try:
+    f = urllib.urlopen(os.path.join(remote_diff_url, "state.txt"), "r")
+  except IOError:
+    lock.release()
+    raise
   end_sequence = get_sequence_num(f)
   f.close()
 
