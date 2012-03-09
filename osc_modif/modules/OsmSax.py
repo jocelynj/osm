@@ -671,13 +671,19 @@ class OscFilterSaxWriter(OscSaxWriter):
             print "NodeNew - no data found..."
             return
 
-        if not self.NodeWithinPoly(1, data["id"], data):
+        if self.NodeWithinPoly(1, data["id"], data):
+            self.nodes_added_in_poly[1].add(data["id"])
+            if self.NodeWithinPoly(0, data["id"], data):
+                self.nodes_added_in_poly[0].add(data["id"])
+            else:
+                action = "delete"
+        elif action != "create":
             return
-        self.nodes_added_in_poly[1].add(data["id"])
-        if self.NodeWithinPoly(0, data["id"], data):
-            self.nodes_added_in_poly[0].add(data["id"])
-        else:
+        elif self.NodeWithinPoly(1, data["id"]):
+            # node was previously in polygon
             action = "delete"
+        else:
+            return
 
         if action != self._prev_action:
             if self._prev_action != "":
