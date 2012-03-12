@@ -32,8 +32,11 @@ modif_diff_path = []
 poly_file = []
 modif_diff_path.append(os.path.join(work_path, "hour-replicate-france"))
 poly_file.append("polygons/france.poly")
-modif_diff_path.append(os.path.join(work_path, "hour-replicate-polynesie"))
-poly_file.append("polygons/polynesie.poly")
+for p in ("polynesie", "saint_barthelemy", "saint_martin", "saint_pierre_et_miquelon",
+          "wallis_et_futuna"):
+  modif_diff_path.append(os.path.join(work_path, "hour-replicate-%s" % p))
+  poly_file.append("polygons/%s.poly" % p)
+
 remote_diff_url = "http://planet.openstreetmap.org/hour-replicate/"
 lock_file = os.path.join(work_path, "hour-replicate-france.lock")
 
@@ -100,7 +103,7 @@ def update():
         position_only = False
 
       # apply polygon
-      print time.strftime("%H:%M:%S"), "  apply polygon"
+      print time.strftime("%H:%M:%S"), "  apply polygon", poly_file[i]
       osc_modif.osc_modif(None, osc_modif_options)
       os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
       shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
