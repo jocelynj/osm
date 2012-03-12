@@ -51,7 +51,7 @@ echo "*** Clean database"
 $PREFIX psql "$DATABASE" -c "INSERT INTO actions SELECT * FROM actions_bak;"
 $PREFIX psql "$DATABASE" -c "ANALYZE actions;"
 
-if [ `date +%u` != 2 ]; then
+if [ `date +%u` != 2 -o `date +%k` -gt 3 ]; then
   rm $LOCKFILE
   exit
 fi
