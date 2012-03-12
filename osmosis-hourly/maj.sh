@@ -32,19 +32,26 @@ $OSMOSIS --read-replication-interval workingDirectory="$WORKDIR" --simplify-chan
 
 echo ""
 echo "*** Insert data in postgresql"
+$PREFIX psql "$DATABASE" -c "TRUNCATE actions;"
 $OSMOSIS --read-xml-change "$CHANGEFILE" --write-pgsql-change database="$DATABASE" user="$USER" password="$PASS"
 
 echo ""
 echo "*** Clean database"
+#$PREFIX psql "$DATABASE" -c "grant select on osmosis.actions_bak to public;"
+#$PREFIX psql "$DATABASE" -c "CREATE UNIQUE INDEX idx_actions_bak ON actions_bak (data_type, id);"
+#$PREFIX psql "$DATABASE" -c "CREATE INDEX idx_actions_bak_action ON actions_bak (data_type, action);"
+#$PREFIX psql "$DATABASE" -c "INSERT INTO actions SELECT * FROM actions_bak;"
+#$PREFIX psql "$DATABASE" -c "DELETE FROM actions WHERE action = 'D'"
+#$PREFIX psql "$DATABASE" -c "ANALYZE actions;"
+
+#$PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_way();"
+#$PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_node();"
+#$PREFIX psql "$DATABASE" -c "TRUNCATE actions;"
+
 $PREFIX psql "$DATABASE" -c "INSERT INTO actions SELECT * FROM actions_bak;"
-$PREFIX psql "$DATABASE" -c "DELETE FROM actions WHERE action = 'D'"
 $PREFIX psql "$DATABASE" -c "ANALYZE actions;"
 
-$PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_way();"
-$PREFIX psql "$DATABASE" -c "SELECT osmosisUpdate_node();"
-$PREFIX psql "$DATABASE" -c "TRUNCATE actions;"
-
-if [ `date +%u` != 2 ]; then
+if [ `date +%u` != 2 -o `date +%k` -gt 3 ]; then
   rm $LOCKFILE
   exit
 fi

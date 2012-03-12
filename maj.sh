@@ -12,10 +12,14 @@ echo " *** autoroutes"
 
 (cd autoroutes && ./maj.sh)
 
+echo ""
+date
 echo " *** rivieres"
 (cd rivieres && ./maj.sh)
 # (cd transport && ./maj.sh)
 
+echo ""
+date
 echo " *** images"
 (cd images && ./maj.sh)
 
