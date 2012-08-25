@@ -27,18 +27,20 @@ from modules import OsmSax
 
 # configuration
 work_path = "/data/work/osmbin"
-orig_diff_path = os.path.join(work_path, "hour-replicate")
+type_replicate = "redaction-period/minute-replicate"
+#type_replicate = "day-replicate"
+orig_diff_path = os.path.join(work_path, type_replicate)
 modif_diff_path = []
 poly_file = []
-modif_diff_path.append(os.path.join(work_path, "hour-replicate-france"))
+modif_diff_path.append(os.path.join(work_path, type_replicate + "-france"))
 poly_file.append("polygons/france.poly")
 for p in ("polynesie", "saint_barthelemy", "saint_martin", "saint_pierre_et_miquelon",
           "wallis_et_futuna"):
-  modif_diff_path.append(os.path.join(work_path, "hour-replicate-%s" % p))
+  modif_diff_path.append(os.path.join(work_path, "%s-%s" % (type_replicate, p)))
   poly_file.append("polygons/%s.poly" % p)
 
-remote_diff_url = "http://planet.openstreetmap.org/hour-replicate/"
-lock_file = os.path.join(work_path, "hour-replicate-france.lock")
+remote_diff_url = "http://planet.openstreetmap.org/" + type_replicate
+lock_file = os.path.join(work_path, "update.lock")
 
 def update():
   # get lock
