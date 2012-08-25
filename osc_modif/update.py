@@ -54,9 +54,12 @@ def update():
       if key.strip() == "sequenceNumber":
         return int(value)
 
-  f = open(os.path.join(orig_diff_path, "state.txt"), "r")
-  begin_sequence = get_sequence_num(f)
-  f.close()
+  try:
+    f = open(os.path.join(orig_diff_path, "state.txt"), "r")
+    begin_sequence = get_sequence_num(f)
+    f.close()
+  except IOError:
+    begin_sequence = 0
 
   # get remote sequence number
   try:
