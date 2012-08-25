@@ -118,7 +118,9 @@ class OsmSaxReader(handler.ContentHandler):
             self._members.append(attrs)
 
     def endElement(self, name):
-        if name == u"node":
+        if name == u"changeset":
+            pass
+        elif name == u"node":
             self._data[u"tag"] = self._tags
             try:
                 self._output.NodeCreate(self._data)
@@ -245,6 +247,8 @@ class OscSaxReader(handler.ContentHandler):
             self._action = name
         elif name == u"delete":
             self._action = name
+        elif name == u"changeset":
+            self._tags = {}
         elif name == u"node":
             attrs[u"id"] = int(attrs[u"id"])
             attrs[u"lat"] = float(attrs[u"lat"])
@@ -275,7 +279,9 @@ class OscSaxReader(handler.ContentHandler):
             self._output.begin()
 
     def endElement(self, name):
-        if name == u"node":
+        if name == u"changeset":
+            pass
+        elif name == u"node":
             self._data[u"tag"] = self._tags
             if self._action == u"create":
                 self._output.NodeCreate(self._data)
