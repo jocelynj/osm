@@ -35,7 +35,7 @@ poly_file = []
 modif_diff_path.append(os.path.join(work_path, type_replicate + "-france"))
 poly_file.append("polygons/france.poly")
 for p in ("polynesie", "saint_barthelemy", "saint_martin", "saint_pierre_et_miquelon",
-          "wallis_et_futuna", "guadeloupe", "reunion"):
+          "wallis_et_futuna", "guadeloupe", "reunion", "europe"):
   modif_diff_path.append(os.path.join(work_path, "%s-%s" % (type_replicate, p)))
   poly_file.append("polygons/%s.poly" % p)
 
