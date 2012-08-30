@@ -42,6 +42,39 @@ for p in ("polynesie", "saint_barthelemy", "saint_martin", "saint_pierre_et_miqu
 remote_diff_url = "http://planet.openstreetmap.org/" + type_replicate
 lock_file = os.path.join(work_path, "update.lock")
 
+###########################################################################
+
+def update_symlink(src, dst):
+  if os.path.exists(dst) and not os.path.islink(dst):
+    raise Exception, "File '%s' is not a symbolic link" % dst
+  if os.path.exists(dst):
+    os.remove(dst)
+  os.symlink(src, dst)
+
+def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_diff_path):
+
+  orig_diff_file = os.path.join(orig_diff_path, file_location)
+  modif_diff_file = os.path.join(modif_diff_path, file_location)
+
+  class osc_modif_options:
+    source = orig_diff_file + ".osc.gz"
+    dest = modif_diff_file + ".osc.gz"
+    poly = modif_poly
+    position_only = False
+
+  # apply polygon
+  print time.strftime("%H:%M:%S"), "  apply polygon", modif_poly
+  osc_modif.osc_modif(None, osc_modif_options)
+  os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
+  shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
+
+  # update symbolic link to state.txt
+  modif_state_file = os.path.join(modif_diff_path, "state.txt")
+  update_symlink(modif_diff_file + ".state.txt", modif_state_file)
+  os.utime(modif_state_file, (file_date, file_date))
+
+###########################################################################
+
 def update():
   # get lock
   lock = lockfile.FileLock(lock_file)
@@ -71,13 +104,6 @@ def update():
   f.close()
 
   # download diffs, and apply the polygon on them
-  def update_symlink(src, dst):
-    if os.path.exists(dst) and not os.path.islink(dst):
-      raise Exception, "File '%s' is not a symbolic link" % dst
-    if os.path.exists(dst):
-      os.remove(dst)
-    os.symlink(src, dst)
-
   for i in xrange(begin_sequence + 1, end_sequence + 1):
     print time.strftime("%H:%M:%S"), i
     for path in [orig_diff_path] + modif_diff_path:
@@ -100,22 +126,8 @@ def update():
       os.utime(orig_diff_file + ext, (file_date, file_date))
 
     for i in xrange(len(modif_diff_path)):
-      modif_diff_file = os.path.join(modif_diff_path[i], file_location)
-      class osc_modif_options:
-        source = orig_diff_file + ".osc.gz"
-        dest = modif_diff_file + ".osc.gz"
-        poly = poly_file[i]
-        position_only = False
-
-      # apply polygon
-      print time.strftime("%H:%M:%S"), "  apply polygon", poly_file[i]
-      osc_modif.osc_modif(None, osc_modif_options)
-      os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
-      shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
-
-      # update symbolic link to state.txt
-      update_symlink(modif_diff_file + ".state.txt", os.path.join(modif_diff_path[i], "state.txt"))
-      os.utime(os.path.join(modif_diff_path[i], "state.txt"), (file_date, file_date))
+      generate_diff(orig_diff_path, file_location, file_date,
+                    poly_file[i], modif_diff_path[i])
 
     # update osmbin
     print time.strftime("%H:%M:%S"), "  update osmbin"
