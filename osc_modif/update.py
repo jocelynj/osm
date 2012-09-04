@@ -21,6 +21,8 @@
 ###########################################################################
 
 import os, urllib, lockfile, shutil, time, dateutil.parser, dateutil.tz
+import multiprocessing
+import sys
 import osc_modif
 from modules import OsmBin
 from modules import OsmSax
@@ -64,6 +66,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
 
   # apply polygon
   print time.strftime("%H:%M:%S"), "  apply polygon", modif_poly
+  sys.stdout.flush()
   osc_modif.osc_modif(None, osc_modif_options)
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
   shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
@@ -72,6 +75,8 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
   modif_state_file = os.path.join(modif_diff_path, "state.txt")
   update_symlink(modif_diff_file + ".state.txt", modif_state_file)
   os.utime(modif_state_file, (file_date, file_date))
+  print time.strftime("%H:%M:%S"), "  finish polygon", modif_poly
+  sys.stdout.flush()
 
 ###########################################################################
 
@@ -125,9 +130,19 @@ def update():
       file_date = time.mktime(dateutil.parser.parse(headers["Last-Modified"]).astimezone(dateutil.tz.tzlocal()).timetuple())
       os.utime(orig_diff_file + ext, (file_date, file_date))
 
+    pool = multiprocessing.Pool(processes=4)
+    res = []
+
     for i in xrange(len(modif_diff_path)):
-      generate_diff(orig_diff_path, file_location, file_date,
-                    poly_file[i], modif_diff_path[i])
+      res.append(pool.apply_async(generate_diff,
+                                  (orig_diff_path, file_location, file_date,
+                                   poly_file[i], modif_diff_path[i])))
+
+    for r in res:
+      r.get()
+
+    pool.close()
+    pool.join()
 
     # update osmbin
     print time.strftime("%H:%M:%S"), "  update osmbin"
