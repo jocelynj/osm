@@ -105,7 +105,7 @@ def update():
   except IOError:
     lock.release()
     raise
-  end_sequence = max(get_sequence_num(f), begin_sequence + 30)
+  end_sequence = get_sequence_num(f)
   f.close()
 
   # download diffs, and apply the polygon on them
