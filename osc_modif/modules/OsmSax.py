@@ -817,3 +817,193 @@ class OscFilterSaxWriter(OscSaxWriter):
                 if self.RelationWithinPoly(poly_idx, ref, rec_rel=rec_rel + [id]):
                     return True
         return False
+
+###########################################################################
+
+class OscBBoxSaxWriter(OscSaxWriter):
+
+    def __init__(self, out, enc, reader):
+        XMLGenerator.__init__(self, GetFile(out, "w"), enc)
+        self.reader = reader
+
+        self.num_read_nodes = 0
+        self.num_read_ways = 0
+        self.num_read_relations = 0
+    
+    def begin(self):
+        self.startElement("osmChange", { "version": "0.6",
+                                         "generator": "OsmSax" })
+        self._prev_action = ""
+        self.nodes_modified = {}
+        self.ways_modified = {}
+        self.rels_modified = {}
+
+    def end(self):
+        if self._prev_action != "":
+            self.endElement(self._prev_action)
+        self.endElement("osmChange")
+
+        print "read %d nodes, %d ways, %d relations" % (self.num_read_nodes, self.num_read_ways, self.num_read_relations)
+
+    def concat_bbox(self, bbox1, bbox2):
+        if bbox1 == None:
+            return bbox2
+        if bbox2 == None:
+            return bbox1
+        bbox = self.expand_bbox(bbox1, bbox2[0], bbox2[1])
+        bbox = self.expand_bbox(bbox,  bbox2[2], bbox2[3])
+        return bbox
+
+    def expand_bbox(self, bbox, lat, lon):
+        if bbox == None:
+            return [lat, lon, lat, lon]
+        if lat < bbox[0]:
+            bbox[0] = lat
+        if lat > bbox[2]:
+            bbox[2] = lat
+        if lon < bbox[1]:
+            bbox[1] = lon
+        if lon > bbox[3]:
+            bbox[3] = lon
+        return bbox
+
+    def NodeNew(self, data, action):
+        if not data:
+            print "NodeNew - no data found..."
+            return
+
+        bbox = self.NodeBBox(data["id"], data)
+
+        if action != self._prev_action:
+            if self._prev_action != "":
+                self.endElement(self._prev_action)
+            self.startElement(action, {})
+            self._prev_action = action
+
+        if data[u"tag"]:
+            self.startElement("node", _formatData(data))
+            for (k, v) in data[u"tag"].items():
+                self.Element("tag", {"k":k, "v":v})
+            self.endElement("node")
+        else:
+            self.Element("node", _formatData(data))
+
+    def NodeBBox(self, id, data = None):
+        if id in self.nodes_modified:
+            return self.nodes_modified[id]
+        bbox = None
+        if data:
+            bbox = self.expand_bbox(None, data["lat"], data["lon"])
+
+        data = self.reader.NodeGet(id)
+        self.num_read_nodes += 1
+        if not data:
+            self.nodes_modified[id] = bbox
+            return bbox
+
+        bbox = self.expand_bbox(bbox, data["lat"], data["lon"])
+        self.nodes_modified[id] = bbox
+        return bbox
+
+    def WayNew(self, data, action):
+        if not data:
+            print "WayNew - no data found..."
+            return
+
+        bbox = self.WayBBox(data["id"], data)
+
+        if action != self._prev_action:
+            if self._prev_action != "":
+                self.endElement(self._prev_action)
+            self.startElement(action, {})
+            self._prev_action = action
+
+        if bbox == None:
+            print data["id"]
+
+        self.startElement("way", _formatData(data))
+        self.Element("bbox", {"minlat":str(bbox[0]),"minlon":str(bbox[1]),
+                              "maxlat":str(bbox[2]),"maxlon":str(bbox[3])})
+        for (k, v) in data[u"tag"].items():
+            self.Element("tag", {"k":k, "v":v})
+        for n in data[u"nd"]:
+            self.Element("nd", {"ref":str(n)})
+        self.endElement("way")
+
+    def WayBBox(self, id, data = None):
+        if id in self.ways_modified:
+            return self.ways_modified[id]
+        bbox = None
+        if data:
+            for n in data[u"nd"]:
+                bbox = self.concat_bbox(bbox, self.NodeBBox(n))
+
+        if not data or len(data["nd"]) == 0:
+            data = self.reader.WayGet(id)
+            self.num_read_ways += 1
+            if not data:
+                self.ways_modified[id] = bbox
+                return bbox
+
+        for n in data[u"nd"]:
+            bbox = self.concat_bbox(bbox, self.NodeBBox(n))
+        self.ways_modified[id] = bbox
+        return bbox
+
+    def RelationNew(self, data, action):
+        if not data:
+            print "RelationNew - no data found..."
+            return
+
+        bbox = self.RelationBBox(data["id"], data)
+
+        if action != self._prev_action:
+            if self._prev_action != "":
+                self.endElement(self._prev_action)
+            self.startElement(action, {})
+            self._prev_action = action
+
+        self.startElement("relation", _formatData(data))
+        self.Element("bbox", {"minlat":str(bbox[0]),"minlon":str(bbox[1]),
+                              "maxlat":str(bbox[2]),"maxlon":str(bbox[3])})
+        for (k, v) in data[u"tag"].items():
+            self.Element("tag", {"k":k, "v":v})
+        for m in data[u"member"]:
+            m[u"ref"] = str(m[u"ref"])
+            self.Element("member", m)
+        self.endElement("relation")
+
+    def RelationBBox(self, id, data = None, rec_rel = []):
+        if id in rec_rel:
+            print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
+            return None
+        if id in self.rels_modified:
+            return self.rels_modified[id]
+        bbox = None
+        if data:
+            for m in data[u"member"]:
+                ref = m[u"ref"]
+                if m[u"type"] == u"node":
+                    bbox = self.concat_bbox(bbox, self.NodeBBox(ref))
+                elif m[u"type"] == u"way":
+                    bbox = self.concat_bbox(bbox, self.WayBBox(ref))
+                elif m[u"type"] == u"relation":
+                    bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
+
+        if not data or len(data["member"]) == 0:
+            data = self.reader.RelationGet(id)
+            self.num_read_relations += 1
+            if not data:
+                self.rels_modified[id] = bbox
+                return bbox
+
+        for m in data[u"member"]:
+            ref = m[u"ref"]
+            if m[u"type"] == u"node":
+                bbox = self.concat_bbox(bbox, self.NodeBBox(ref))
+            elif m[u"type"] == u"way":
+                bbox = self.concat_bbox(bbox, self.WayBBox(ref))
+            elif m[u"type"] == u"relation":
+                bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
+        self.rels_modified[id] = bbox
+        return bbox

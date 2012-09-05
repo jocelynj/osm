@@ -49,6 +49,8 @@ def osc_modif(config, options):
         out_osc = OsmSax.OscPositionSaxWriter(options.dest, "UTF-8", reader)
     elif poly:
         out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, OsmGeom.check_intersection, poly, poly_buffered)
+    elif options.bbox:
+        out_osc = OsmSax.OscBBoxSaxWriter(options.dest, "UTF-8", reader)
     else:
 #        out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8", reader)
         out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8")
@@ -88,6 +90,8 @@ if __name__ == "__main__":
                       help="Only report positions")
     parser.add_option("--poly", dest="poly", action="store",
                       help="Polygon to use to limit changes")
+    parser.add_option("--bbox", dest="bbox", action="store_true",
+                      help="Add bounding-box to ways and relations")
     (options, args) = parser.parse_args()
 
     osc_modif(config, options)
