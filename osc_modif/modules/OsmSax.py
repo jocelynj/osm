@@ -277,6 +277,8 @@ class OscSaxReader(handler.ContentHandler):
             self._members.append(attrs)
         elif name == u"osmChange":
             self._output.begin()
+        elif name == u"bbox":
+            self._data["bbox"] = attrs
 
     def endElement(self, name):
         if name == u"changeset":
@@ -752,6 +754,10 @@ class OscFilterSaxWriter(OscSaxWriter):
             self._prev_action = action
 
     def WayWithinPoly(self, poly_idx, id, data = None):
+        if data and "bbox" in data:
+            if not self.check_intersection(self.poly[poly_idx], data["bbox"]):
+                return False
+
         if not data or len(data["nd"]) == 0:
             if id in self.ways_added_in_poly[poly_idx]:
                 return True
@@ -794,6 +800,10 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.endElement("relation")
 
     def RelationWithinPoly(self, poly_idx, id, data = None, rec_rel = []):
+        if data and "bbox" in data:
+            if not self.check_intersection(self.poly[poly_idx], data["bbox"]):
+                return False
+
         if not data or len(data["member"]) == 0:
             if id in rec_rel:
                 print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
