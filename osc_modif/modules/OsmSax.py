@@ -882,7 +882,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
             print "NodeNew - no data found..."
             return
 
-        bbox = self.NodeBBox(data["id"], data)
+        bbox = self.NodeBBox(data["id"], data, action=action)
 
         if action != self._prev_action:
             if self._prev_action != "":
@@ -898,12 +898,15 @@ class OscBBoxSaxWriter(OscSaxWriter):
         else:
             self.Element("node", _formatData(data))
 
-    def NodeBBox(self, id, data = None):
+    def NodeBBox(self, id, data = None, action = None):
         if id in self.nodes_modified:
             return self.nodes_modified[id]
         bbox = None
         if data:
             bbox = self.expand_bbox(None, data["lat"], data["lon"])
+            if action == "create":
+                self.nodes_modified[id] = bbox
+                return bbox
 
         data = self.reader.NodeGet(id)
         self.num_read_nodes += 1
@@ -920,7 +923,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
             print "WayNew - no data found..."
             return
 
-        bbox = self.WayBBox(data["id"], data)
+        bbox = self.WayBBox(data["id"], data, action)
 
         if action != self._prev_action:
             if self._prev_action != "":
@@ -940,20 +943,22 @@ class OscBBoxSaxWriter(OscSaxWriter):
             self.Element("nd", {"ref":str(n)})
         self.endElement("way")
 
-    def WayBBox(self, id, data = None):
+    def WayBBox(self, id, data = None, action = None):
         if id in self.ways_modified:
             return self.ways_modified[id]
         bbox = None
         if data:
             for n in data[u"nd"]:
                 bbox = self.concat_bbox(bbox, self.NodeBBox(n))
-
-        if not data or len(data["nd"]) == 0:
-            data = self.reader.WayGet(id)
-            self.num_read_ways += 1
-            if not data:
+            if action == "create":
                 self.ways_modified[id] = bbox
                 return bbox
+
+        data = self.reader.WayGet(id)
+        self.num_read_ways += 1
+        if not data:
+            self.ways_modified[id] = bbox
+            return bbox
 
         for n in data[u"nd"]:
             bbox = self.concat_bbox(bbox, self.NodeBBox(n))
@@ -965,7 +970,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
             print "RelationNew - no data found..."
             return
 
-        bbox = self.RelationBBox(data["id"], data)
+        bbox = self.RelationBBox(data["id"], data, action)
 
         if action != self._prev_action:
             if self._prev_action != "":
@@ -974,8 +979,11 @@ class OscBBoxSaxWriter(OscSaxWriter):
             self._prev_action = action
 
         self.startElement("relation", _formatData(data))
-        self.Element("bbox", {"minlat":str(bbox[0]),"minlon":str(bbox[1]),
-                              "maxlat":str(bbox[2]),"maxlon":str(bbox[3])})
+        if bbox == None:
+            print "relation %d is empty" % data["id"]
+        else:
+            self.Element("bbox", {"minlat":str(bbox[0]),"minlon":str(bbox[1]),
+                                  "maxlat":str(bbox[2]),"maxlon":str(bbox[3])})
         for (k, v) in data[u"tag"].items():
             self.Element("tag", {"k":k, "v":v})
         for m in data[u"member"]:
@@ -983,7 +991,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
             self.Element("member", m)
         self.endElement("relation")
 
-    def RelationBBox(self, id, data = None, rec_rel = []):
+    def RelationBBox(self, id, data = None, action = None, rec_rel = []):
         if id in rec_rel:
             print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
             return None
@@ -999,13 +1007,15 @@ class OscBBoxSaxWriter(OscSaxWriter):
                     bbox = self.concat_bbox(bbox, self.WayBBox(ref))
                 elif m[u"type"] == u"relation":
                     bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
-
-        if not data or len(data["member"]) == 0:
-            data = self.reader.RelationGet(id)
-            self.num_read_relations += 1
-            if not data:
+            if action == "create":
                 self.rels_modified[id] = bbox
                 return bbox
+
+        data = self.reader.RelationGet(id)
+        self.num_read_relations += 1
+        if not data:
+            self.rels_modified[id] = bbox
+            return bbox
 
         for m in data[u"member"]:
             ref = m[u"ref"]
