@@ -720,7 +720,7 @@ class OscFilterSaxWriter(OscSaxWriter):
             if not data:
                 return False
 
-        return self.check_intersection(self.poly[poly_idx], data["lat"], data["lon"])
+        return self.check_intersection(self.poly[poly_idx], (data["lat"], data["lon"]))
 
     def WayNew(self, data, action):
         if not data:

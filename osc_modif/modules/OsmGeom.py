@@ -77,9 +77,19 @@ def read_multipolygon(f):
     wkt = read_multipolygon_wkt(f)
     return loads(wkt)
 
-def check_intersection(polygon, lat, lon):
-    pt = Point((lon, lat))
-    return polygon.intersects(pt)
+def check_intersection(polygon, coords):
+    if len(coords) == 2:
+        (lat, lon) = coords
+        obj = Point((lon, lat))
+    elif len(coords) == 4:
+        minlat = float(coords["minlat"])
+        minlon = float(coords["minlon"])
+        maxlat = float(coords["maxlat"])
+        maxlon = float(coords["maxlon"])
+        obj = Polygon(((minlon, minlat), (minlon, maxlat),
+                       (maxlon, maxlat), (maxlon, minlat)))
+
+    return polygon.intersects(obj)
 
 ###########################################################################
 
