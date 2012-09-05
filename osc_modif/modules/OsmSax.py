@@ -650,6 +650,10 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.poly.append(poly)
         self.poly.append(poly_buffered)
         self.poly_num = 2
+
+        self.num_read_nodes = 0
+        self.num_read_ways = 0
+        self.num_read_relations = 0
     
     def begin(self):
         self.startElement("osmChange", { "version": "0.6",
@@ -670,6 +674,8 @@ class OscFilterSaxWriter(OscSaxWriter):
         if self._prev_action != "":
             self.endElement(self._prev_action)
         self.endElement("osmChange")
+
+        print "read %d nodes, %d ways, %d relations" % (self.num_read_nodes, self.num_read_ways, self.num_read_relations)
 
 
     def NodeNew(self, data, action):
@@ -710,6 +716,7 @@ class OscFilterSaxWriter(OscSaxWriter):
             if id in self.nodes_added_in_poly[poly_idx]:
                 return True
             data = self.reader.NodeGet(id)
+            self.num_read_nodes += 1
             if not data:
                 return False
 
@@ -749,6 +756,7 @@ class OscFilterSaxWriter(OscSaxWriter):
             if id in self.ways_added_in_poly[poly_idx]:
                 return True
             data = self.reader.WayGet(id)
+            self.num_read_ways += 1
             if not data:
                 return False
 
@@ -793,6 +801,7 @@ class OscFilterSaxWriter(OscSaxWriter):
             if id in self.rels_added_in_poly[poly_idx]:
                 return True
             data = self.reader.RelationGet(id)
+            self.num_read_relations += 1
             if not data:
                 return False
 
