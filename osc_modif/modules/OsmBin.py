@@ -421,6 +421,9 @@ if __name__=="__main__":
             print i.WayGet(int(sys.argv[4]))
         if sys.argv[3]=="relation":
             print i.RelationGet(int(sys.argv[4]))
+        if sys.argv[3]=="relation_full":
+            import pprint
+            pprint.pprint(i.RelationFullRecur(int(sys.argv[4])))
             
     if sys.argv[1]=="--pyro":
         import Pyro.core
