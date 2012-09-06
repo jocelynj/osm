@@ -1026,4 +1026,6 @@ class OscBBoxSaxWriter(OscSaxWriter):
             elif m[u"type"] == u"relation":
                 bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
         self.rels_modified[id] = bbox
+        if bbox[0] == -180 and bbox[1] == -180:
+            print "potential error on relation %d" % id
         return bbox
