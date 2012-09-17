@@ -398,10 +398,14 @@ if __name__=="__main__":
         InitFolder(sys.argv[2])
 
     if sys.argv[1]=="--import":
-        import OsmSax
         if sys.argv[3] == "-":
+            import OsmSax
             i = OsmSax.OsmSaxReader(sys.stdin)
+        elif sys.argv[3].endswith(".pbf"):
+            import OsmPbf
+            i = OsmPbf.OsmPbfReader(sys.argv[3])
         else:
+            import OsmSax
             i = OsmSax.OsmSaxReader(sys.argv[3])
         o = OsmBin(sys.argv[2], "w")
         i.CopyTo(o)
