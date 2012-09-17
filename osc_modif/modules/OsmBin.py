@@ -187,6 +187,8 @@ class OsmBin:
             self._lock = lockfile.FileLock(lock_file)
             self._lock.acquire(timeout=0)
             self._ReadFree()
+
+        self.node_id_size = 5
         
     def __del__(self):
         try:
@@ -267,10 +269,10 @@ class OsmBin:
             return None
         self._fWay_data.seek(AdrWay)
         nbn  = _Str2ToInt(self._fWay_data.read(2))
-        data = self._fWay_data.read(4*nbn)
+        data = self._fWay_data.read(self.node_id_size*nbn)
         nds = []
         for i in range(nbn):
-            nds.append(_Str4ToInt(data[4*i:4*i+4]))
+            nds.append(_Str5ToInt(data[self.node_id_size*i:self.node_id_size*(i+1)]))
         return {"id": WayId, "nd": nds, "tag":{}}
     
     def WayCreate(self, data):
@@ -281,7 +283,7 @@ class OsmBin:
             AdrWay = self._free[nbn].pop()
         else:
             AdrWay = self._fWay_data_size
-            self._fWay_data_size += 2 + 4*nbn
+            self._fWay_data_size += 2 + self.node_id_size*nbn
         # Fichier way.idx
         self._fWay_idx.seek(5*data[u"id"])
         self._fWay_idx.write(_IntToStr5(AdrWay))
@@ -289,7 +291,7 @@ class OsmBin:
         self._fWay_data.seek(AdrWay)
         c = _IntToStr2(len(data[u"nd"]))
         for NodeId in data[u"nd"]:
-            c += _IntToStr4(NodeId)
+            c += _IntToStr5(NodeId)
         self._fWay_data.write(c)
 
     WayUpdate = WayCreate
