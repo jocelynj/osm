@@ -134,7 +134,7 @@ def update():
   except IOError:
     lock.release()
     raise
-  end_sequence = get_sequence_num(f)
+  end_sequence = min(begin_sequence + 200, get_sequence_num(f))
   f.close()
 
   # download diffs, and apply the polygon on them
