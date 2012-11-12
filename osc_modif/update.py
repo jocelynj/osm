@@ -29,21 +29,24 @@ from modules import OsmSax
 
 # configuration
 multiproc_enabled = True
-work_path = "/data/work/osmbin"
-type_replicate = "redaction-period/minute-replicate"
+work_path = "/data/work/osmbin/replication"
+work_diffs_path = os.path.join(work_path, "diffs")
+type_replicate = "minute"
 #type_replicate = "day-replicate"
-orig_diff_path = os.path.join(work_path, type_replicate)
-bbox_diff_path = os.path.join(work_path, type_replicate + "-bbox")
+orig_diff_path = os.path.join(work_diffs_path, "planet", type_replicate)
+bbox_diff_path = os.path.join(work_diffs_path, "bbox", type_replicate)
 modif_diff_path = []
 poly_file = []
-modif_diff_path.append(os.path.join(work_path, type_replicate + "-france"))
-poly_file.append("polygons/france.poly")
-for p in ("polynesie", "saint_barthelemy", "saint_martin", "saint_pierre_et_miquelon",
-          "wallis_et_futuna", "guadeloupe", "reunion", "europe"):
-  modif_diff_path.append(os.path.join(work_path, "%s-%s" % (type_replicate, p)))
-  poly_file.append("polygons/%s.poly" % p)
 
-remote_diff_url = "http://planet.openstreetmap.org/" + type_replicate
+os.chdir("polygons")
+for (r,d,files) in os.walk("."):
+  for f in files:
+     if f.endswith(".poly"):
+        poly_file.append(os.path.join(r, f))
+        p = os.path.join(r, f[:-len(".poly")])
+        modif_diff_path.append(os.path.join(work_diffs_path, p, type_replicate))
+
+remote_diff_url = "http://planet.openstreetmap.org/replication/" + type_replicate
 lock_file = os.path.join(work_path, "update.lock")
 
 ###########################################################################
