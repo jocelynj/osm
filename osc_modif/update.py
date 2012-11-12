@@ -137,6 +137,13 @@ def update():
   end_sequence = min(begin_sequence + 200, get_sequence_num(f))
   f.close()
 
+  try:
+    begin_sequence = int(begin_sequence)
+    end_sequence = int(end_sequence)
+  except TypeError:
+    lock.release()
+    raise
+
   # download diffs, and apply the polygon on them
   for i in xrange(begin_sequence + 1, end_sequence + 1):
     print time.strftime("%H:%M:%S"), i
