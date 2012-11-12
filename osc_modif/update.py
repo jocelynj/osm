@@ -111,6 +111,8 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
 
 def update():
   # get lock
+  if not os.path.exists(work_path):
+    os.makedirs(work_path)
   lock = lockfile.FileLock(lock_file)
   lock.acquire(timeout=0)
 
