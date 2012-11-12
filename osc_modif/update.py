@@ -28,6 +28,7 @@ from modules import OsmBin
 from modules import OsmSax
 
 # configuration
+multiproc_enabled = True
 work_path = "/data/work/osmbin"
 type_replicate = "redaction-period/minute-replicate"
 #type_replicate = "day-replicate"
@@ -164,12 +165,17 @@ def update():
     res = []
 
     for i in xrange(len(modif_diff_path)):
-      res.append(pool.apply_async(generate_diff,
-                                  (bbox_diff_path, file_location, file_date,
-                                   poly_file[i], modif_diff_path[i])))
+      if multiproc_enabled:
+        res.append(pool.apply_async(generate_diff,
+                                    (bbox_diff_path, file_location, file_date,
+                                     poly_file[i], modif_diff_path[i])))
+      else:
+        generate_diff(bbox_diff_path, file_location, file_date,
+                      poly_file[i], modif_diff_path[i])
 
-    for r in res:
-      r.get()
+    if multiproc_enabled:
+      for r in res:
+        r.get()
 
     pool.close()
     pool.join()
