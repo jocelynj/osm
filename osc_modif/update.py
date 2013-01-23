@@ -65,7 +65,7 @@ def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path
 
   class osc_modif_options:
     source = orig_diff_file + ".osc.gz"
-    dest = modif_diff_file + ".osc.gz"
+    dest = modif_diff_file + "-tmp.osc.gz"
     poly = False
     bbox = True
     position_only = False
@@ -74,6 +74,7 @@ def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path
   print time.strftime("%H:%M:%S"), "  generate bbox"
   sys.stdout.flush()
   osc_modif.osc_modif(None, osc_modif_options)
+  os.rename(modif_diff_file + "-tmp.osc.gz", modif_diff_file + ".osc.gz")
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
   shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
 
@@ -92,7 +93,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
 
   class osc_modif_options:
     source = orig_diff_file + ".osc.gz"
-    dest = modif_diff_file + ".osc.gz"
+    dest = modif_diff_file + "-tmp.osc.gz"
     poly = modif_poly
     position_only = False
 
@@ -100,6 +101,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
   print time.strftime("%H:%M:%S"), "  apply polygon", modif_poly
   sys.stdout.flush()
   osc_modif.osc_modif(None, osc_modif_options)
+  os.rename(modif_diff_file + "-tmp.osc.gz", modif_diff_file + ".osc.gz")
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
   shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
 
