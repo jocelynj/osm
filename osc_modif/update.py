@@ -208,6 +208,7 @@ def update():
     os.utime(os.path.join(orig_diff_path, "state.txt"), (file_date, file_date))
 
   # free lock
+  sys.stdout.flush()
   lock.release()
 
 if __name__ == '__main__':
