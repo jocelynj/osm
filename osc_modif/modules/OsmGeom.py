@@ -60,13 +60,17 @@ def read_polygon_wkt(f):
 def read_multipolygon_wkt(f):
 
     polygons = []
+    skip_polygon = False
     while True:
         dummy = f.readline()
         if not(dummy):
             break
+        if dummy[0] == "!":
+            # this is a hole
+            skip_polygon = True
         
         polygon = read_polygon_wkt(f)
-        if polygon != None:
+        if polygon != None and not skip_polygon:
             polygons.append(polygon)
 
     wkt = "MULTIPOLYGON (" + ",".join(polygons) + ")"
