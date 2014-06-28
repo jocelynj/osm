@@ -28,6 +28,7 @@ from modules import OsmBin
 from modules import OsmSax
 
 # configuration
+skip_diff_generation = False
 multiproc_enabled = True
 work_path = "/data/work/osmbin/replication"
 work_diffs_path = os.path.join(work_path, "diffs")
@@ -109,7 +110,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
   modif_state_file = os.path.join(modif_diff_path, "state.txt")
   update_symlink(modif_diff_file + ".state.txt", modif_state_file)
   os.utime(modif_state_file, (file_date, file_date))
-  print time.strftime("%H:%M:%S"), "  finish polygon", modif_poly
+#  print time.strftime("%H:%M:%S"), "  finish polygon", modif_poly
   sys.stdout.flush()
 
 ###########################################################################
@@ -129,6 +130,7 @@ def update():
         return int(value)
 
   try:
+    print os.path.join(orig_diff_path, "state.txt")
     f = open(os.path.join(orig_diff_path, "state.txt"), "r")
     begin_sequence = get_sequence_num(f)
     f.close()
@@ -141,7 +143,7 @@ def update():
   except IOError:
     lock.release()
     raise
-  end_sequence = min(begin_sequence + 200, get_sequence_num(f))
+  end_sequence = min(begin_sequence + 10000, get_sequence_num(f))
   f.close()
 
   try:
@@ -173,26 +175,27 @@ def update():
       file_date = time.mktime(dateutil.parser.parse(headers["Last-Modified"]).astimezone(dateutil.tz.tzlocal()).timetuple())
       os.utime(orig_diff_file + ext, (file_date, file_date))
 
-    generate_bbox_diff(orig_diff_path, file_location, file_date, bbox_diff_path)
+    if not skip_diff_generation:
+      generate_bbox_diff(orig_diff_path, file_location, file_date, bbox_diff_path)
 
-    pool = multiprocessing.Pool(processes=4)
-    res = []
+      pool = multiprocessing.Pool(processes=8)
+      res = []
 
-    for i in xrange(len(modif_diff_path)):
+      for i in xrange(len(modif_diff_path)):
+        if multiproc_enabled:
+          res.append(pool.apply_async(generate_diff,
+                                      (bbox_diff_path, file_location, file_date,
+                                       poly_file[i], modif_diff_path[i])))
+        else:
+          generate_diff(bbox_diff_path, file_location, file_date,
+                        poly_file[i], modif_diff_path[i])
+
       if multiproc_enabled:
-        res.append(pool.apply_async(generate_diff,
-                                    (bbox_diff_path, file_location, file_date,
-                                     poly_file[i], modif_diff_path[i])))
-      else:
-        generate_diff(bbox_diff_path, file_location, file_date,
-                      poly_file[i], modif_diff_path[i])
+        for r in res:
+          r.get()
 
-    if multiproc_enabled:
-      for r in res:
-        r.get()
-
-    pool.close()
-    pool.join()
+      pool.close()
+      pool.join()
 
     # update osmbin
     print time.strftime("%H:%M:%S"), "  update osmbin"
@@ -206,6 +209,7 @@ def update():
     print time.strftime("%H:%M:%S"), "  update links to state.txt"
     update_symlink(orig_diff_file + ".state.txt", os.path.join(orig_diff_path, "state.txt"))
     os.utime(os.path.join(orig_diff_path, "state.txt"), (file_date, file_date))
+    sys.stdout.flush()
 
   # free lock
   sys.stdout.flush()
