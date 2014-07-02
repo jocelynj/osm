@@ -911,11 +911,15 @@ class OscBBoxSaxWriter(OscSaxWriter):
         data = self.reader.NodeGet(id)
         self.num_read_nodes += 1
         if not data:
+            if not bbox:
+                print "node %d is empty" % id
             self.nodes_modified[id] = bbox
             return bbox
 
         bbox = self.expand_bbox(bbox, data["lat"], data["lon"])
         self.nodes_modified[id] = bbox
+        if bbox[0] == -180 and bbox[1] == -180:
+            print "error on node %d" % id
         return bbox
 
     def WayNew(self, data, action):
@@ -1027,6 +1031,12 @@ class OscBBoxSaxWriter(OscSaxWriter):
             elif m[u"type"] == u"relation":
                 bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
         self.rels_modified[id] = bbox
-        if bbox == None or (bbox[0] == -180 and bbox[1] == -180):
+        if len(data[u"member"]) == 0:
+            print "relation %d is empty [bbox=%s]" % (id, bbox)
+        elif bbox == None or (bbox[0] == -180 and bbox[1] == -180):
             print "potential error on relation %d" % id
+            print bbox
+            import pprint
+            pprint.pprint(data)
+            raise
         return bbox
