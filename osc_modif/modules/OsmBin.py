@@ -240,6 +240,8 @@ class OsmBin:
         read = self._fNode_crd.read(8)
         if len(read) != 8:
             return None
+        if read[:] == "\0" * 8:
+            return None
         data["lat"] = _Str4ToCoord(read[:4])
         data["lon"] = _Str4ToCoord(read[4:])
         data["tag"] = {}
