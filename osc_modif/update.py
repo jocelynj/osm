@@ -52,6 +52,11 @@ lock_file = os.path.join(work_path, "update.lock")
 
 ###########################################################################
 
+def update_hardlink(src, dst):
+  if os.path.exists(dst):
+    os.remove(dst)
+  os.link(src, dst)
+
 def update_symlink(src, dst):
   if os.path.exists(dst) and not os.path.islink(dst):
     raise Exception, "File '%s' is not a symbolic link" % dst
@@ -77,7 +82,7 @@ def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path
   osc_modif.osc_modif(None, osc_modif_options)
   os.rename(modif_diff_file + "-tmp.osc.gz", modif_diff_file + ".osc.gz")
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
-  shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
+  update_hardlink(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
 
   # update symbolic link to state.txt
   modif_state_file = os.path.join(modif_diff_path, "state.txt")
@@ -104,7 +109,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
   osc_modif.osc_modif(None, osc_modif_options)
   os.rename(modif_diff_file + "-tmp.osc.gz", modif_diff_file + ".osc.gz")
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
-  shutil.copy2(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
+  update_hardlink(orig_diff_file + ".state.txt", modif_diff_file + ".state.txt")
 
   # update symbolic link to state.txt
   modif_state_file = os.path.join(modif_diff_path, "state.txt")
