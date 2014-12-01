@@ -1038,5 +1038,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
             print bbox
             import pprint
             pprint.pprint(data)
-            raise
+            bbox = self.expand_bbox(bbox, -89, -189)
+            bbox = self.expand_bbox(bbox,  89,  189)
+            return bbox
         return bbox
