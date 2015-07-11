@@ -215,7 +215,7 @@ class OsmBin:
 
     def _WriteFree(self):
         try:
-            free = self._free
+            self._free
         except AttributeError:
             return
         f = open(os.path.join(self._folder, "way.free"), 'w')
@@ -279,17 +279,17 @@ class OsmBin:
     
     def WayCreate(self, data):
         self.WayDelete(data)
-        # Recherche emplacement
+        # Search space big enough to store node list
         nbn = len(data["nd"])
         if self._free[nbn]:
             AdrWay = self._free[nbn].pop()
         else:
             AdrWay = self._fWay_data_size
             self._fWay_data_size += 2 + self.node_id_size*nbn
-        # Fichier way.idx
+        # File way.idx
         self._fWay_idx.seek(5*data[u"id"])
         self._fWay_idx.write(_IntToStr5(AdrWay))
-        # Fichier way.dat
+        # File way.dat
         self._fWay_data.seek(AdrWay)
         c = _IntToStr2(len(data[u"nd"]))
         for NodeId in data[u"nd"]:
@@ -299,12 +299,12 @@ class OsmBin:
     WayUpdate = WayCreate
     
     def WayDelete(self, data):
-        # Recherche des données
+        # Seek to position in file containing address to node list
         self._fWay_idx.seek(5*data[u"id"])
         AdrWay = _Str5ToInt(self._fWay_idx.read(5))
         if not AdrWay:
             return
-        # Libère la place
+        # Free space
         self._fWay_data.seek(AdrWay)
         nbn = _Str2ToInt(self._fWay_data.read(2))
         try:
@@ -312,7 +312,7 @@ class OsmBin:
         except KeyError:
             print "Cannot access free[%d] for way id=%d, idx=%d" % (nbn, data[u"id"], AdrWay)
             raise
-        # Enregistre la suppression
+        # Save deletion
         self._fWay_idx.seek(5*data[u"id"])
         self._fWay_idx.write(_IntToStr5(0))
         
@@ -376,6 +376,12 @@ class OsmBin:
         return dta
 
     #######################################################################
+    ## user functions
+
+    def UserGet(self, UserId):
+        return None
+
+    #######################################################################
 
     def CopyWayTo(self, output):
         self._fWay_idx.seek(0,2)
@@ -390,36 +396,41 @@ class OsmBin:
             for j in os.listdir(self._reldir+"/"+i):
                 for k in os.listdir(self._reldir+"/"+i+"/"+j):
                     output.RelationCreate(eval(open(self._reldir+"/"+i+"/"+j+"/"+k).read()))
-        
+
+    def Import(self, f):
+        if f == "-":
+            import OsmSax
+            i = OsmSax.OsmSaxReader(sys.stdin)
+        elif f.endswith(".pbf"):
+            import OsmPbf
+            i = OsmPbf.OsmPbfReader(f)
+        else:
+            import OsmSax
+            i = OsmSax.OsmSaxReader(f)
+        i.CopyTo(self)
+
+    def Update(self, f):
+        import OsmSax
+        if f == "-":
+            i = OsmSax.OscSaxReader(sys.stdin)
+        else:
+            i = OsmSax.OscSaxReader(f)
+        i.CopyTo(self)
+
+
 ###########################################################################
 
 if __name__=="__main__":
-    import sys
-    
     if sys.argv[1]=="--init":
         InitFolder(sys.argv[2])
 
     if sys.argv[1]=="--import":
-        if sys.argv[3] == "-":
-            import OsmSax
-            i = OsmSax.OsmSaxReader(sys.stdin)
-        elif sys.argv[3].endswith(".pbf"):
-            import OsmPbf
-            i = OsmPbf.OsmPbfReader(sys.argv[3])
-        else:
-            import OsmSax
-            i = OsmSax.OsmSaxReader(sys.argv[3])
         o = OsmBin(sys.argv[2], "w")
-        i.CopyTo(o)
+        o.Import(sys.argv[3])
 
     if sys.argv[1]=="--update":
-        import OsmSax
-        if sys.argv[3] == "-":
-            i = OsmSax.OscSaxReader(sys.stdin)
-        else:
-            i = OsmSax.OscSaxReader(sys.argv[3])
         o = OsmBin(sys.argv[2], "w")
-        i.CopyTo(o)
+        o.Update(sys.argv[3])
         
     if sys.argv[1]=="--read":
         i = OsmBin(sys.argv[2])
@@ -445,3 +456,173 @@ if __name__=="__main__":
         #daemon.useNameServer(ns)
         uri=daemon.connect(OsmBin2("/data/work/osmbin/data/"), "OsmBin")
         daemon.requestLoop()
+
+###########################################################################
+import unittest
+
+class TestCountObjects:
+    def __init__(self):
+        self.num_nodes = 0
+        self.num_ways = 0
+        self.num_rels = 0
+
+    def NodeCreate(self, data):
+        self.num_nodes += 1
+
+    def WayCreate(self, data):
+        self.num_ways += 1
+
+    def RelationCreate(self, data):
+        self.num_rels += 1
+
+class Test(unittest.TestCase):
+    def setUp(self):
+        import shutil
+        shutil.rmtree("tmp-osmbin/", True)
+        InitFolder("tmp-osmbin/")
+        self.a = OsmBin("tmp-osmbin/", "w")
+        self.a.Import("tests/saint_barthelemy.osm.bz2")
+
+    def tearDown(self):
+        import shutil
+        del self.a
+        shutil.rmtree("tmp-osmbin/")
+
+    def check_node(self, func, id, exists=True):
+        res = func(id)
+        if exists:
+            assert res
+            assert res["lat"]
+            assert res["lon"]
+            self.assertEquals(res["id"], id)
+        else:
+            if res:
+                self.assertEquals(res["lat"], _Str4ToCoord(_IntToStr4(0)))
+                self.assertEquals(res["lon"], _Str4ToCoord(_IntToStr4(0)))
+
+    def check_way(self, func, id, exists=True):
+        res = func(id)
+        if exists:
+            assert res
+            assert res["nd"]
+            self.assertEquals(res["tag"], {})
+            self.assertEquals(res["id"], id)
+        else:
+            assert not res
+
+    def check_relation(self, func, id, exists=True):
+        res = func(id)
+        if exists:
+            assert res
+            assert res["member"]
+            assert res["tag"]
+            self.assertEquals(res["id"], id)
+        else:
+            assert not res
+
+    def check_relation_full(self, func, id, exists=True):
+        res = func(id)
+        if exists:
+            assert res
+            assert res["member"]
+            assert res["tag"]
+            self.assertEquals(res["id"], id)
+        else:
+            assert not res
+
+    def test_copy_relation(self):
+        o1 = TestCountObjects()
+        self.a.CopyRelationTo(o1)
+        self.assertEquals(o1.num_nodes, 0)
+        self.assertEquals(o1.num_ways, 0)
+        self.assertEquals(o1.num_rels, 16)
+
+    def test_node(self):
+        del self.a
+        self.a = OsmBin("tmp-osmbin/", "r")
+        self.check_node(self.a.NodeGet, 266053077)
+        self.check_node(self.a.NodeGet, 2619283351)
+        self.check_node(self.a.NodeGet, 2619283352)
+        self.check_node(self.a.NodeGet, 1, False)
+        self.check_node(self.a.NodeGet, 266053076, False)
+        self.check_node(self.a.NodeGet, 2619283353, False)
+
+    def test_way(self):
+        self.check_way(self.a.WayGet, 24473155)
+        self.check_way(self.a.WayGet, 255316725)
+        self.check_way(self.a.WayGet, 1, False)
+        self.check_way(self.a.WayGet, 24473154, False)
+        self.check_way(self.a.WayGet, 255316726, False)
+
+    def test_relation(self):
+        del self.a
+        self.a = OsmBin("tmp-osmbin/", "r")
+        self.check_relation(self.a.RelationGet, 47796)
+        self.check_relation(self.a.RelationGet, 2707693)
+        self.check_relation(self.a.RelationGet, 1, False)
+        self.check_relation(self.a.RelationGet, 47795, False)
+        self.check_relation(self.a.RelationGet, 2707694, False)
+
+    def test_relation_full(self):
+        res = self.a.RelationFullRecur(529891)
+        assert res
+        self.assertEquals(res[0]["type"], "relation")
+        self.assertEquals(res[0]["data"]["id"], 529891)
+        self.assertEquals(res[1]["type"], "node")
+        self.assertEquals(res[1]["data"]["id"], 670634766)
+        self.assertEquals(res[2]["type"], "node")
+        self.assertEquals(res[2]["data"]["id"], 670634768)
+
+        self.a.Update("tests/saint_barthelemy.osc.gz")
+        res = self.a.RelationFullRecur(7800)
+        assert res
+        self.assertEquals(res[0]["type"], "relation")
+        self.assertEquals(res[0]["data"]["id"], 7800)
+        self.assertEquals(res[1]["type"], "node")
+        self.assertEquals(res[1]["data"]["id"], 78)
+        self.assertEquals(res[2]["type"], "node")
+        self.assertEquals(res[2]["data"]["id"], 79)
+        self.assertEquals(res[3]["type"], "way")
+        self.assertEquals(res[3]["data"]["id"], 780)
+        self.assertEquals(res[4]["type"], "node")
+        self.assertEquals(res[4]["data"]["id"], 78)
+        self.assertEquals(res[5]["type"], "node")
+        self.assertEquals(res[5]["data"]["id"], 79)
+
+    def test_relation_full_missing(self):
+        with self.assertRaises(MissingDataError) as cm:
+            self.a.RelationFullRecur(47796)
+        self.assertEquals(str(cm.exception), "MissingDataError(missing way 82217912)")
+
+    def test_relation_full_loop(self):
+        self.a.Update("tests/saint_barthelemy.osc.gz")
+        with self.assertRaises(RelationLoopError) as cm:
+            self.a.RelationFullRecur(7801)
+        self.assertEquals(str(cm.exception), "RelationLoopError(member loop [7801, 7802, 7801])")
+
+    def test_update(self):
+        self.check_node(self.a.NodeGet, 1759873129)
+        self.check_node(self.a.NodeGet, 1759883953)
+        self.check_node(self.a.NodeGet, 1973325505)
+        self.check_way(self.a.WayGet, 24552609)
+        self.check_way(self.a.WayGet, 24552626)
+        self.check_way(self.a.WayGet, 24552826)
+        self.check_relation(self.a.RelationGet, 529891)
+        self.check_relation(self.a.RelationGet, 1106302)
+        self.check_node(self.a.NodeGet, 78, False)
+        self.check_node(self.a.NodeGet, 79, False)
+        self.check_way(self.a.WayGet, 780, False)
+        self.check_relation(self.a.RelationGet, 7800, False)
+        self.a.Update("tests/saint_barthelemy.osc.gz")
+        self.check_node(self.a.NodeGet, 1759873129, False)
+        self.check_node(self.a.NodeGet, 1759883953, False)
+        self.check_node(self.a.NodeGet, 1973325505, False)
+        self.check_way(self.a.WayGet, 24552609, False)
+        self.check_way(self.a.WayGet, 24552626, False)
+        self.check_way(self.a.WayGet, 24552826, False)
+        self.check_relation(self.a.RelationGet, 529891, False)
+        self.check_relation(self.a.RelationGet, 1106302, False)
+        self.check_node(self.a.NodeGet, 78)
+        self.check_node(self.a.NodeGet, 79)
+        self.check_way(self.a.WayGet, 780)
+        self.check_relation(self.a.RelationGet, 7800)
