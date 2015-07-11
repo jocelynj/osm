@@ -39,7 +39,9 @@ def osc_modif(config, options):
 
     try:
         from modules.OsmBin import OsmBin
-        reader = OsmBin("/data/work/osmbin/data")
+        if not hasattr(options, "osmbin_path"):
+            options.osmbin_path = "/data/work/osmbin/data/"
+        reader = OsmBin(options.osmbin_path)
     except IOError:
         from modules import OsmOsis
         reader = OsmOsis.OsmOsis(config.dbs, config.dbp)
@@ -95,3 +97,50 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     osc_modif(config, options)
+
+###########################################################################
+import unittest
+
+class Test(unittest.TestCase):
+
+    def setUp(self):
+        import shutil
+        from modules import OsmBin
+        shutil.rmtree("tmp-osmbin/", True)
+        OsmBin.InitFolder("tmp-osmbin/")
+        self.osmbin = OsmBin.OsmBin("tmp-osmbin/", "w")
+        self.osmbin.Import("tests/000.osm")
+        del self.osmbin
+
+    def tearDown(self):
+        import shutil
+        from modules import OsmBin
+        self.osmbin = OsmBin.OsmBin("tmp-osmbin/", "w")
+        del self.osmbin
+        shutil.rmtree("tmp-osmbin/")
+
+    def compare_files(self, a, b):
+        import filecmp
+        return filecmp.cmp(a, b)
+
+    def test(self):
+        class osc_modif_options:
+            source = "tests/001.osc"
+            dest = "tests/out/001.bbox.osc"
+            poly = False
+            bbox = True
+            position_only = False
+            osmbin_path = "tmp-osmbin/"
+        osc_modif(None, osc_modif_options)
+
+        assert self.compare_files("tests/results/001.bbox.osc", "tests/out/001.bbox.osc")
+
+        class osc_modif_options:
+            source = "tests/results/001.bbox.osc"
+            dest = "tests/out/001.poly.osc"
+            poly = "tests/polygon.poly"
+            position_only = False
+            osmbin_path = "tmp-osmbin/"
+        osc_modif(None, osc_modif_options)
+
+        assert self.compare_files("tests/results/001.poly.osc", "tests/out/001.poly.osc")

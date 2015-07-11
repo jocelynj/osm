@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='true' generator='JOSM'>
+  <node id='90' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='18.5243945621' lon='12.30952532458'>
+    <tag k='change' v='no' />
+    <tag k='from' v='polygon' />
+    <tag k='to' v='polygon' />
+  </node>
+  <node id='91' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='2' lat='18.52513042698' lon='12.4849185365'>
+    <tag k='change' v='yes' />
+    <tag k='from' v='polygon' />
+    <tag k='new_tag' v='1' />
+    <tag k='to' v='polygon' />
+  </node>
+  <node id='92' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='2' lat='17.83914935622' lon='7.02428023975'>
+    <tag k='change' v='yes' />
+    <tag k='from' v='polygon' />
+    <tag k='to' v='outside' />
+  </node>
+  <node id='95' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='2' lat='18.3712953596' lon='12.49493227591'>
+    <tag k='change' v='yes' />
+    <tag k='from' v='polygon' />
+    <tag k='to' v='polygon' />
+  </node>
+  <node id='147' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='17.95002931824' lon='6.82672362736'>
+    <tag k='change' v='no' />
+    <tag k='from' v='outside' />
+    <tag k='to' v='outside' />
+  </node>
+  <node id='155' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='2' lat='17.85019462167' lon='6.83330997742'>
+    <tag k='change' v='yes' />
+    <tag k='from' v='outside' />
+    <tag k='to' v='outside' />
+  </node>
+  <node id='175' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='2' lat='18.36425505506' lon='12.31340391695'>
+    <tag k='change' v='yes' />
+    <tag k='from' v='outside' />
+    <tag k='to' v='polygon' />
+  </node>
+  <node id='203' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='2' lat='17.93681790141' lon='7.00246143944'>
+    <tag k='change' v='yes' />
+    <tag k='from' v='outside' />
+    <tag k='new_tag' v='1' />
+    <tag k='to' v='outside' />
+  </node>
+</osm>

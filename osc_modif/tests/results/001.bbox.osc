@@ -1,0 +1,36 @@
+<osmChange version="0.6" generator="OsmSax">
+<modify>
+<node id="91" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5251304" lon="12.4849185">
+<tag k="new_tag" v="1"/>
+<tag k="from" v="polygon"/>
+<tag k="change" v="yes"/>
+<tag k="to" v="polygon"/>
+</node>
+<node id="92" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8391494" lon="7.0242802">
+<tag k="to" v="outside"/>
+<tag k="from" v="polygon"/>
+<tag k="change" v="yes"/>
+</node>
+<node id="95" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3712954" lon="12.4949323">
+<tag k="to" v="polygon"/>
+<tag k="from" v="polygon"/>
+<tag k="change" v="yes"/>
+</node>
+<node id="155" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8501946" lon="6.83331">
+<tag k="to" v="outside"/>
+<tag k="from" v="outside"/>
+<tag k="change" v="yes"/>
+</node>
+<node id="175" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3642551" lon="12.3134039">
+<tag k="to" v="polygon"/>
+<tag k="from" v="outside"/>
+<tag k="change" v="yes"/>
+</node>
+<node id="203" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9368179" lon="7.0024614">
+<tag k="new_tag" v="1"/>
+<tag k="from" v="outside"/>
+<tag k="change" v="yes"/>
+<tag k="to" v="outside"/>
+</node>
+</modify>
+</osmChange>
