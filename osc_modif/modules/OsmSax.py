@@ -753,9 +753,6 @@ class OscFilterSaxWriter(OscSaxWriter):
         for n in data[u"nd"]:
             self.Element("nd", {"ref":str(n)})
         self.endElement("way")
-        if action != self._prev_action:
-            self.endElement(action)
-            self._prev_action = action
 
     def WayWithinPoly(self, poly_idx, id, data = None):
         if data and "bbox" in data:
