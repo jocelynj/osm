@@ -356,19 +356,19 @@ class OsmSaxWriter(XMLGenerator):
             XMLGenerator.__init__(self, out, enc)
     
     def startElement(self, name, attrs):
-        self._write('<' + name)
+        self._write(u'<' + name)
         for (name, value) in attrs.items():
-            self._write(' %s=%s' % (name, quoteattr(value)))
-        self._write('>\n')
+            self._write(u' %s=%s' % (name, quoteattr(value)))
+        self._write(u'>\n')
         
     def endElement(self, name):
-        self._write('</%s>\n' % name)
+        self._write(u'</%s>\n' % name)
     
     def Element(self, name, attrs):
-        self._write('<' + name)
+        self._write(u'<' + name)
         for (name, value) in attrs.items():
-            self._write(' %s=%s' % (name, quoteattr(value)))
-        self._write(' />\n')
+            self._write(u' %s=%s' % (name, quoteattr(value)))
+        self._write(u' />\n')
 
 
     def NodeCreate(self, data):
@@ -449,19 +449,19 @@ class OscSaxWriter(XMLGenerator):
         self.reader = reader
 
     def startElement(self, name, attrs):
-        self._write('<' + name)
+        self._write(u'<' + name)
         for (name, value) in attrs.items():
-            self._write(' %s=%s' % (name, quoteattr(value)))
-        self._write('>\n')
+            self._write(u' %s=%s' % (name, quoteattr(value)))
+        self._write(u'>\n')
         
     def endElement(self, name):
-        self._write('</%s>\n' % name)
+        self._write(u'</%s>\n' % name)
     
     def Element(self, name, attrs):
-        self._write('<' + name)
+        self._write(u'<' + name)
         for (name, value) in attrs.items():
-            self._write(' %s=%s' % (name, quoteattr(value)))
-        self._write('/>\n')
+            self._write(u' %s=%s' % (name, quoteattr(value)))
+        self._write(u'/>\n')
 
     def begin(self):
         self.startElement("osmChange", { "version": "0.6",
@@ -848,8 +848,8 @@ class OscBBoxSaxWriter(OscSaxWriter):
         self.num_read_relations = 0
     
     def begin(self):
-        self.startElement("osmChange", { "version": "0.6",
-                                         "generator": "OsmSax" })
+        self.startElement(u"osmChange", { u"version": u"0.6",
+                                          u"generator": u"OsmSax" })
         self._prev_action = ""
         self.nodes_modified = {}
         self.ways_modified = {}
