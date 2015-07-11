@@ -1,43 +1,248 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<osm version='0.6' upload='true' generator='JOSM'>
-  <node id='90' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='18.5243945621' lon='12.30952532458'>
-    <tag k='change' v='no' />
-    <tag k='from' v='polygon' />
-    <tag k='to' v='polygon' />
+<osm version="0.6" generator="Osmosis 0.43.1">
+  <node id="90" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5243946" lon="12.3095253">
+    <tag k="change" v="no"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
   </node>
-  <node id='91' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='18.52513042698' lon='12.4849185365'>
-    <tag k='change' v='yes' />
-    <tag k='from' v='polygon' />
-    <tag k='to' v='polygon' />
+  <node id="91" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5251304" lon="12.4849185">
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
   </node>
-  <node id='92' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='18.5288097039' lon='12.62771654974'>
-    <tag k='change' v='yes' />
-    <tag k='from' v='polygon' />
-    <tag k='to' v='outside' />
+  <node id="92" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5288097" lon="12.6277165">
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="outside"/>
   </node>
-  <node id='95' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='18.5376396454' lon='12.78448393385'>
-    <tag k='change' v='yes' />
-    <tag k='from' v='polygon' />
-    <tag k='to' v='polygon' />
+  <node id="95" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5376396" lon="12.7844839">
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
   </node>
-  <node id='147' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='17.95002931824' lon='6.82672362736'>
-    <tag k='change' v='no' />
-    <tag k='from' v='outside' />
-    <tag k='to' v='outside' />
+  <node id="147" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9500293" lon="6.8267236">
+    <tag k="change" v="no"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="outside"/>
   </node>
-  <node id='155' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='17.93800967159' lon='7.09284455031'>
-    <tag k='change' v='yes' />
-    <tag k='from' v='outside' />
-    <tag k='to' v='outside' />
+  <node id="155" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9380097" lon="7.0928446">
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="outside"/>
   </node>
-  <node id='175' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='17.93678071645' lon='6.89778249605'>
-    <tag k='change' v='yes' />
-    <tag k='from' v='outside' />
-    <tag k='to' v='polygon' />
+  <node id="175" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9367807" lon="6.8977825">
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="polygon"/>
   </node>
-  <node id='203' timestamp='2014-03-31T22:00:00Z' uid='10' user='toto' visible='true' version='1' lat='17.93681790141' lon='7.00246143944'>
-    <tag k='change' v='yes' />
-    <tag k='from' v='outside' />
-    <tag k='to' v='outside' />
+  <node id="203" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9368179" lon="7.0024614">
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="outside"/>
   </node>
+  <node id="232" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4666975" lon="12.2567636"/>
+  <node id="233" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4790056" lon="12.3014613"/>
+  <node id="235" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4653299" lon="12.3540891"/>
+  <node id="237" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4345556" lon="12.3612984"/>
+  <node id="239" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4174563" lon="12.3281356"/>
+  <node id="241" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4619108" lon="12.4319495"/>
+  <node id="242" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4783218" lon="12.4629494"/>
+  <node id="244" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4666975" lon="12.4903448"/>
+  <node id="246" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4454982" lon="12.5004378"/>
+  <node id="248" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4208763" lon="12.478089"/>
+  <node id="250" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3825686" lon="12.5040424"/>
+  <node id="252" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4906291" lon="12.5948795"/>
+  <node id="253" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4974661" lon="12.6525539"/>
+  <node id="255" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4625946" lon="12.5963214"/>
+  <node id="257" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4407109" lon="12.6518329"/>
+  <node id="259" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4215603" lon="12.6475074"/>
+  <node id="261" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4044598" lon="12.6157865"/>
+  <node id="263" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5029355" lon="12.7679026"/>
+  <node id="264" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4578078" lon="12.7830421"/>
+  <node id="266" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4352395" lon="12.7599723"/>
+  <node id="268" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4085641" lon="12.8126002"/>
+  <node id="270" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4372913" lon="12.824856"/>
+  <node id="352" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3216693" lon="12.2899264"/>
+  <node id="353" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3449367" lon="12.3223682"/>
+  <node id="355" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3394623" lon="12.344717"/>
+  <node id="357" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3120877" lon="12.3425542"/>
+  <node id="359" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3059278" lon="12.3223682"/>
+  <node id="361" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.2867622" lon="12.3612984"/>
+  <node id="363" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3168785" lon="12.3922984"/>
+  <node id="398" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9215372" lon="6.8005626"/>
+  <node id="399" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9215372" lon="6.8306392"/>
+  <node id="401" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9006793" lon="6.8347174"/>
+  <node id="403" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8885515" lon="6.7975039"/>
+  <node id="405" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8608969" lon="6.8127972"/>
+  <node id="407" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9200821" lon="6.889773"/>
+  <node id="408" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8919473" lon="6.8964001"/>
+  <node id="410" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9001942" lon="6.9142422"/>
+  <node id="412" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8618673" lon="6.9183204"/>
+  <node id="414" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8575005" lon="6.8999685"/>
+  <node id="416" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9205671" lon="6.9917278"/>
+  <node id="417" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8977687" lon="7.0019233"/>
+  <node id="419" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8987389" lon="7.0121188"/>
+  <node id="421" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8803041" lon="6.995806"/>
+  <node id="423" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8744821" lon="7.016197"/>
+  <node id="425" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8691452" lon="7.0253729"/>
+  <node id="427" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9006793" lon="7.0314902"/>
+  <node id="429" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9200821" lon="7.0947022"/>
+  <node id="430" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9069854" lon="7.0763503"/>
+  <node id="432" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8749673" lon="7.0834872"/>
+  <node id="434" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8735118" lon="7.0967413"/>
+  <node id="436" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8856407" lon="7.1069368"/>
+  <node id="438" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8977687" lon="7.0982706"/>
+  <node id="440" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.90456" lon="7.1120345"/>
+  <node id="442" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.9234773" lon="7.1043879"/>
+  <node id="463" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8225616" lon="6.8046408"/>
+  <node id="464" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8298411" lon="6.8250317"/>
+  <node id="466" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8245028" lon="6.8408347"/>
+  <node id="468" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.7997506" lon="6.8026017"/>
+  <node id="470" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.7978091" lon="6.8204438"/>
+  <node id="472" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8021774" lon="6.8336979"/>
+  <node id="493" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.837309" lon="6.8929658"/>
+  <node id="494" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8436174" lon="6.9087688"/>
+  <node id="496" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8155539" lon="6.9100273"/>
+  <node id="498" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8101318" lon="6.9016319"/>
+  <node id="500" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8169265" lon="6.9311988"/>
+  <node id="502" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8319709" lon="6.92865"/>
+  <node id="604" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.357634" lon="12.4590971"/>
+  <node id="605" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3076772" lon="12.4778412"/>
+  <node id="607" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3398428" lon="12.5142481"/>
+  <node id="609" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3613973" lon="12.4875738"/>
+  <node id="611" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3600288" lon="12.5369574"/>
+  <node id="613" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3237608" lon="12.5474109"/>
+  <way id="234" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="232"/>
+    <nd ref="233"/>
+    <nd ref="235"/>
+    <nd ref="237"/>
+    <nd ref="239"/>
+    <tag k="change" v="no"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
+  </way>
+  <way id="243" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="241"/>
+    <nd ref="242"/>
+    <nd ref="244"/>
+    <nd ref="246"/>
+    <nd ref="248"/>
+    <nd ref="250"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
+  </way>
+  <way id="254" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="252"/>
+    <nd ref="253"/>
+    <nd ref="255"/>
+    <nd ref="257"/>
+    <nd ref="259"/>
+    <nd ref="261"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="outside"/>
+  </way>
+  <way id="265" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="263"/>
+    <nd ref="264"/>
+    <nd ref="266"/>
+    <nd ref="268"/>
+    <nd ref="270"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
+  </way>
+  <way id="354" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="352"/>
+    <nd ref="353"/>
+    <nd ref="355"/>
+    <nd ref="357"/>
+    <nd ref="359"/>
+    <nd ref="361"/>
+    <nd ref="363"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
+  </way>
+  <way id="400" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="398"/>
+    <nd ref="399"/>
+    <nd ref="401"/>
+    <nd ref="403"/>
+    <nd ref="405"/>
+    <tag k="change" v="no"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="outside"/>
+  </way>
+  <way id="409" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="407"/>
+    <nd ref="408"/>
+    <nd ref="410"/>
+    <nd ref="412"/>
+    <nd ref="414"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="polygon"/>
+  </way>
+  <way id="418" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="416"/>
+    <nd ref="417"/>
+    <nd ref="419"/>
+    <nd ref="421"/>
+    <nd ref="423"/>
+    <nd ref="425"/>
+    <nd ref="427"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="outside"/>
+  </way>
+  <way id="431" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="429"/>
+    <nd ref="430"/>
+    <nd ref="432"/>
+    <nd ref="434"/>
+    <nd ref="436"/>
+    <nd ref="438"/>
+    <nd ref="440"/>
+    <nd ref="442"/>
+    <nd ref="429"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="outside"/>
+  </way>
+  <way id="465" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="463"/>
+    <nd ref="464"/>
+    <nd ref="466"/>
+    <nd ref="468"/>
+    <nd ref="470"/>
+    <nd ref="472"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="polygon"/>
+  </way>
+  <way id="495" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="493"/>
+    <nd ref="494"/>
+    <nd ref="496"/>
+    <nd ref="498"/>
+    <nd ref="500"/>
+    <nd ref="502"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="outside"/>
+    <tag k="to" v="outside"/>
+  </way>
+  <way id="606" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+    <nd ref="604"/>
+    <nd ref="605"/>
+    <nd ref="607"/>
+    <nd ref="609"/>
+    <nd ref="611"/>
+    <nd ref="613"/>
+    <tag k="change" v="yes"/>
+    <tag k="from" v="polygon"/>
+    <tag k="to" v="polygon"/>
+  </way>
 </osm>

@@ -1,4 +1,8 @@
 <osmChange version="0.6" generator="OsmSax">
+<create>
+<node id="4" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3298116" lon="12.3082097"/>
+<node id="6" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3254378" lon="12.3324596"/>
+</create>
 <modify>
 <node id="91" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5251304" lon="12.4849185">
 <tag k="from" v="polygon"/>
@@ -20,10 +24,110 @@
 <tag k="from" v="polygon"/>
 <tag k="change" v="yes"/>
 </node>
+</modify>
+<create>
+<node id="141" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5320015" lon="12.6433156">
+<tag k="to" v="polygon"/>
+<tag k="change" v="yes"/>
+</node>
+<node id="148" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4361298" lon="12.5924733"/>
+<node id="150" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4088902" lon="12.6385305"/>
+<node id="152" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.417403" lon="12.6845877"/>
+<node id="154" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4633651" lon="12.7222708"/>
+<node id="156" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4815195" lon="12.6522878"/>
+</create>
+<modify>
 <node id="175" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3642551" lon="12.3134039">
 <tag k="to" v="polygon"/>
 <tag k="from" v="outside"/>
 <tag k="change" v="yes"/>
 </node>
+</modify>
+<delete>
+<node id="252" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.7509025" lon="6.7907668"/>
+<node id="253" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.7577685" lon="6.8484412"/>
+<node id="255" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.7227494" lon="6.7922087"/>
+<node id="257" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.7007732" lon="6.8477202"/>
+<node id="259" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.6815418" lon="6.8433947"/>
+<node id="261" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.6643692" lon="6.8116738"/>
+</delete>
+<modify>
+<node id="266" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4360073" lon="12.78062"/>
+</modify>
+<delete>
+<node id="359" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.688031" lon="7.0063663"/>
+</delete>
+<modify>
+<node id="463" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3493201" lon="12.5927438"/>
+<node id="464" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3565777" lon="12.6131347"/>
+<node id="466" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3512554" lon="12.6289377"/>
+<node id="468" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3265774" lon="12.5907047"/>
+<node id="470" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3246417" lon="12.6085468"/>
+<node id="472" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3289969" lon="12.6218009"/>
+<node id="498" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3345447" lon="12.6490487"/>
+<node id="500" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3438192" lon="12.6581442"/>
+</modify>
+<create>
+<way id="149" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+<tag k="to" v="polygon"/>
+<tag k="change" v="yes"/>
+<nd ref="147"/>
+<nd ref="148"/>
+<nd ref="150"/>
+<nd ref="152"/>
+<nd ref="154"/>
+<nd ref="156"/>
+</way>
+</create>
+<modify>
+<way id="243" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+<tag k="from" v="polygon"/>
+<tag k="new_tag" v="1"/>
+<tag k="change" v="yes"/>
+<tag k="to" v="polygon"/>
+<nd ref="241"/>
+<nd ref="242"/>
+<nd ref="244"/>
+<nd ref="246"/>
+<nd ref="248"/>
+<nd ref="250"/>
+</way>
+<way id="354" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+<tag k="to" v="polygon"/>
+<tag k="from" v="polygon"/>
+<tag k="change" v="yes"/>
+<nd ref="352"/>
+<nd ref="4"/>
+<nd ref="353"/>
+<nd ref="355"/>
+<nd ref="6"/>
+<nd ref="357"/>
+<nd ref="359"/>
+<nd ref="361"/>
+<nd ref="363"/>
+</way>
+<way id="495" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+<tag k="to" v="polygon"/>
+<tag k="from" v="outside"/>
+<tag k="change" v="yes"/>
+<nd ref="493"/>
+<nd ref="494"/>
+<nd ref="496"/>
+<nd ref="498"/>
+<nd ref="500"/>
+<nd ref="502"/>
+</way>
+<way id="606" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
+<tag k="to" v="polygon"/>
+<tag k="from" v="polygon"/>
+<tag k="change" v="yes"/>
+<nd ref="604"/>
+<nd ref="111"/>
+<nd ref="605"/>
+<nd ref="607"/>
+<nd ref="609"/>
+<nd ref="611"/>
+<nd ref="613"/>
+</way>
 </modify>
 </osmChange>
