@@ -686,15 +686,14 @@ class OscFilterSaxWriter(OscSaxWriter):
             return
 
         if self.NodeWithinPoly(1, data["id"], data):
+            # new node is in buffered polygon
             self.nodes_added_in_poly[1].add(data["id"])
             if self.NodeWithinPoly(0, data["id"], data):
                 self.nodes_added_in_poly[0].add(data["id"])
             else:
                 action = "delete"
-        elif action != "create":
-            return
-        elif self.NodeWithinPoly(1, data["id"]):
-            # node was previously in polygon
+        elif self.NodeWithinPoly(1, data["id"], None):
+            # node was previously in buffered polygon
             action = "delete"
         else:
             return
@@ -729,13 +728,18 @@ class OscFilterSaxWriter(OscSaxWriter):
             print "WayNew - no data found..."
             return
 
-        if not self.WayWithinPoly(1, data["id"], data):
-            return
-        self.ways_added_in_poly[1].add(data["id"])
-        if self.WayWithinPoly(0, data["id"], data):
-            self.ways_added_in_poly[0].add(data["id"])
-        else:
+        if self.WayWithinPoly(1, data["id"], data):
+            # new way is in buffered polygon
+            self.ways_added_in_poly[1].add(data["id"])
+            if self.WayWithinPoly(0, data["id"], data):
+                self.ways_added_in_poly[0].add(data["id"])
+            else:
+                action = "delete"
+        elif self.WayWithinPoly(1, data["id"], None):
+            # way was previously in buffered polygon
             action = "delete"
+        else:
+            return
 
         if action != self._prev_action:
             if self._prev_action != "":
@@ -777,13 +781,19 @@ class OscFilterSaxWriter(OscSaxWriter):
             print "RelationNew - no data found..."
             return
 
-        if not self.RelationWithinPoly(1, data["id"], data):
+        if self.RelationWithinPoly(1, data["id"], data):
+            # new relation is in buffered polygon
             return
-        self.rels_added_in_poly[1].add(data["id"])
-        if self.RelationWithinPoly(0, data["id"], data):
-            self.rels_added_in_poly[0].add(data["id"])
-        else:
+            self.rels_added_in_poly[1].add(data["id"])
+            if self.RelationWithinPoly(0, data["id"], data):
+                self.rels_added_in_poly[0].add(data["id"])
+            else:
+                action = "delete"
+        elif self.RelationWithinPoly(1, data["id"], None):
+            # relation was previously in buffered polygon
             action = "delete"
+        else:
+            return
 
         if action != self._prev_action:
             if self._prev_action != "":
