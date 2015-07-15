@@ -748,6 +748,10 @@ class OscFilterSaxWriter(OscSaxWriter):
             self._prev_action = action
 
         self.startElement("way", _formatData(data))
+        if "bbox" in data:
+            bbox = data["bbox"]
+            self.Element("bbox", {"minlat":str(bbox["minlat"]),"minlon":str(bbox["minlon"]),
+                                  "maxlat":str(bbox["maxlat"]),"maxlon":str(bbox["maxlon"])})
         for (k, v) in data[u"tag"].items():
             self.Element("tag", {"k":k, "v":v})
         for n in data[u"nd"]:
@@ -803,6 +807,10 @@ class OscFilterSaxWriter(OscSaxWriter):
             self._prev_action = action
 
         self.startElement("relation", _formatData(data))
+        if "bbox" in data:
+            bbox = data["bbox"]
+            self.Element("bbox", {"minlat":str(bbox["minlat"]),"minlon":str(bbox["minlon"]),
+                                  "maxlat":str(bbox["maxlat"]),"maxlon":str(bbox["maxlon"])})
         for (k, v) in data[u"tag"].items():
             self.Element("tag", {"k":k, "v":v})
         for m in data[u"member"]:
