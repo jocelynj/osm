@@ -778,15 +778,19 @@ class OscFilterSaxWriter(OscSaxWriter):
             print "RelationNew - no data found..."
             return
 
+        bbox_data = {}
+        bbox_data["member"] = {}
+        if "bbox" in data:
+            bbox_data["bbox"] = data["bbox"]
+
         if self.RelationWithinPoly(1, data["id"], data):
             # new relation is in buffered polygon
-            return
             self.rels_added_in_poly[1].add(data["id"])
             if self.RelationWithinPoly(0, data["id"], data):
                 self.rels_added_in_poly[0].add(data["id"])
             else:
                 action = "delete"
-        elif self.RelationWithinPoly(1, data["id"], None):
+        elif self.RelationWithinPoly(1, data["id"], bbox_data):
             # relation was previously in buffered polygon
             action = "delete"
         else:
