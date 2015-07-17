@@ -36,16 +36,33 @@ type_replicate = "minute"
 #type_replicate = "day-replicate"
 orig_diff_path = os.path.join(work_diffs_path, "planet", type_replicate)
 bbox_diff_path = os.path.join(work_diffs_path, "bbox", type_replicate)
+
+countries_param = {}
 modif_diff_path = []
-poly_file = []
+dependencies = {}
 
 os.chdir("polygons")
 for (r,d,files) in os.walk("."):
   for f in files:
      if f.endswith(".poly"):
-        poly_file.append(os.path.join(r, f))
+        country_poly = os.path.join(r, f)
         p = os.path.join(r, f[:-len(".poly")])
-        modif_diff_path.append(os.path.join(work_diffs_path, p, type_replicate))
+        dependencies[p] = []
+        for i in range(1, p.count("/")):
+            father = "/".join(p.split("/")[:-i])
+            if father in dependencies:
+                dependencies[father] += [p]
+                break
+        country_diff = os.path.join(work_diffs_path, p, type_replicate)
+        modif_diff_path.append(country_diff)
+        countries_param[p] = (country_poly, country_diff)
+
+# Find countries without any dependencies
+top_countries = dependencies.keys()
+for (k,v) in dependencies.iteritems():
+  for c in v:
+    if c in top_countries:
+      top_countries.remove(c)
 
 remote_diff_url = "http://planet.openstreetmap.org/replication/" + type_replicate
 lock_file = os.path.join(work_path, "update.lock")
@@ -92,7 +109,7 @@ def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path
   sys.stdout.flush()
 
 
-def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_diff_path):
+def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_diff_path, country):
 
   orig_diff_file = os.path.join(orig_diff_path, file_location)
   modif_diff_file = os.path.join(modif_diff_path, file_location)
@@ -117,6 +134,24 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
   os.utime(modif_state_file, (file_date, file_date))
   print time.strftime("%H:%M:%S"), "  finish polygon", modif_poly
   sys.stdout.flush()
+
+  return (country, file_location, file_date)
+
+###########################################################################
+
+def launch_dep_countries(res):
+  for c in dependencies[res[0]]:
+    country_param = countries_param[c]
+    if multiproc_enabled:
+      pool.apply_async(generate_diff,
+                       (countries_param[res[0]][1], res[1], res[2],
+                        country_param[0], country_param[1], c),
+                       callback=launch_dep_countries)
+    else:
+      new_res = generate_diff(countries_param[res[0]][1], res[1], res[2],
+                              country_param[0], country_param[1], c)
+      launch_dep_countries(new_res)
+
 
 ###########################################################################
 
@@ -185,17 +220,19 @@ def update(wanted_end_sequence=None):
     if not skip_diff_generation:
       generate_bbox_diff(orig_diff_path, file_location, file_date, bbox_diff_path)
 
-      pool = multiprocessing.Pool(processes=8)
       res = []
 
-      for i in xrange(len(modif_diff_path)):
+      for country in top_countries:
+        country_param = countries_param[country]
         if multiproc_enabled:
           res.append(pool.apply_async(generate_diff,
                                       (bbox_diff_path, file_location, file_date,
-                                       poly_file[i], modif_diff_path[i])))
+                                       country_param[0], country_param[1], country),
+                                      callback=launch_dep_countries))
         else:
-          generate_diff(bbox_diff_path, file_location, file_date,
-                        poly_file[i], modif_diff_path[i])
+          res = generate_diff(bbox_diff_path, file_location, file_date,
+                              country_param[0], country_param[1], country)
+          launch_dep_countries(res)
 
       if multiproc_enabled:
         for r in res:
@@ -232,4 +269,5 @@ if __name__ == '__main__':
     wanted_end_sequence = int(sys.argv[2])
   else:
     wanted_end_sequence = None
+  pool = multiprocessing.Pool(processes=8)
   update(wanted_end_sequence)
