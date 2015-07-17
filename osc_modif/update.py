@@ -120,7 +120,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
 
 ###########################################################################
 
-def update():
+def update(wanted_end_sequence=None):
   # get lock
   if not os.path.exists(work_path):
     os.makedirs(work_path)
@@ -149,6 +149,8 @@ def update():
     lock.release()
     raise
   end_sequence = min(begin_sequence + 10000, get_sequence_num(f))
+  if wanted_end_sequence:
+    end_sequence = min(end_sequence, wanted_end_sequence)
   f.close()
 
   try:
@@ -221,4 +223,13 @@ def update():
   lock.release()
 
 if __name__ == '__main__':
-  update()
+  if len(sys.argv) > 1 and sys.argv[1]=="--list":
+    import pprint
+    pprint.pprint(sorted(top_countries))
+    pprint.pprint(dependencies)
+    sys.exit(0)
+  if len(sys.argv) > 1 and sys.argv[1]=="--end":
+    wanted_end_sequence = int(sys.argv[2])
+  else:
+    wanted_end_sequence = None
+  update(wanted_end_sequence)
