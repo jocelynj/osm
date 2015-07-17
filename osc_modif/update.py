@@ -122,7 +122,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
 
   # apply polygon
 #  print time.strftime("%H:%M:%S"), "  apply polygon", modif_poly
-  sys.stdout.flush()
+#  sys.stdout.flush()
   osc_modif.osc_modif(None, osc_modif_options)
   os.rename(modif_diff_file + "-tmp.osc.gz", modif_diff_file + ".osc.gz")
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
@@ -133,7 +133,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
   update_symlink(modif_diff_file + ".state.txt", modif_state_file)
   os.utime(modif_state_file, (file_date, file_date))
   print time.strftime("%H:%M:%S"), "  finish polygon", modif_poly
-  sys.stdout.flush()
+#  sys.stdout.flush()
 
   return (country, file_location, file_date)
 
