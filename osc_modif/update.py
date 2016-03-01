@@ -79,7 +79,11 @@ def update_symlink(src, dst):
     raise Exception, "File '%s' is not a symbolic link" % dst
   if os.path.exists(dst):
     os.remove(dst)
-  os.symlink(src, dst)
+  try:
+    os.symlink(src, dst)
+  except:
+    print "FAIL on update_symlink(%s, %s)" % (src, dst)
+    raise
 
 def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path):
 
