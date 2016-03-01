@@ -144,22 +144,43 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
 ###########################################################################
 
 def launch_dep_countries(res):
+
+  global multiproc_enabled
+  global pool
+  global pool_jobs
+  global lock_num_launched
+  global num_launched
+
+  if multiproc_enabled:
+    lock_num_launched.acquire()
+
   for c in dependencies[res[0]]:
     country_param = countries_param[c]
+    num_launched += 1
     if multiproc_enabled:
-      pool.apply_async(generate_diff,
-                       (countries_param[res[0]][1], res[1], res[2],
-                        country_param[0], country_param[1], c),
-                       callback=launch_dep_countries)
+      pool_jobs.append(pool.apply_async(generate_diff,
+                                        (countries_param[res[0]][1], res[1], res[2],
+                                         country_param[0], country_param[1], c),
+                                        callback=launch_dep_countries))
     else:
       new_res = generate_diff(countries_param[res[0]][1], res[1], res[2],
                               country_param[0], country_param[1], c)
       launch_dep_countries(new_res)
 
+  num_launched -= 1
+  if multiproc_enabled:
+    lock_num_launched.release()
+
 
 ###########################################################################
 
 def update(wanted_end_sequence=None):
+
+  global pool
+  global pool_jobs
+  global lock_num_launched
+  global num_launched
+
   # get lock
   if not os.path.exists(work_path):
     os.makedirs(work_path)
@@ -224,26 +245,35 @@ def update(wanted_end_sequence=None):
     if not skip_diff_generation:
       generate_bbox_diff(orig_diff_path, file_location, file_date, bbox_diff_path)
 
-      res = []
+      if multiproc_enabled:
+        lock_num_launched.acquire()
 
       for country in top_countries:
         country_param = countries_param[country]
+        num_launched += 1
         if multiproc_enabled:
-          res.append(pool.apply_async(generate_diff,
-                                      (bbox_diff_path, file_location, file_date,
-                                       country_param[0], country_param[1], country),
-                                      callback=launch_dep_countries))
+          pool_jobs.append(pool.apply_async(generate_diff,
+                                            (bbox_diff_path, file_location, file_date,
+                                             country_param[0], country_param[1], country),
+                                            callback=launch_dep_countries))
         else:
-          res = generate_diff(bbox_diff_path, file_location, file_date,
-                              country_param[0], country_param[1], country)
-          launch_dep_countries(res)
+          pool_jobs = generate_diff(bbox_diff_path, file_location, file_date,
+                                    country_param[0], country_param[1], country)
+          launch_dep_countries(pool_jobs)
 
       if multiproc_enabled:
-        for r in res:
-          r.get()
+        lock_num_launched.release()
+        while True:
+          lock_num_launched.acquire()
+          local_num_launched = num_launched
+          lock_num_launched.release()
+          if local_num_launched == 0 and len(pool_jobs) == 0:
+            break
+          for r in pool_jobs:
+            r.get()
+            pool_jobs.remove(r)
 
-      pool.close()
-      pool.join()
+      assert num_launched == 0
 
     # update osmbin
     print time.strftime("%H:%M:%S"), "  update osmbin"
@@ -259,6 +289,10 @@ def update(wanted_end_sequence=None):
     os.utime(os.path.join(orig_diff_path, "state.txt"), (file_date, file_date))
     sys.stdout.flush()
 
+  if multiproc_enabled:
+    pool.close()
+    pool.join()
+
   # free lock
   sys.stdout.flush()
   lock.release()
@@ -273,5 +307,10 @@ if __name__ == '__main__':
     wanted_end_sequence = int(sys.argv[2])
   else:
     wanted_end_sequence = None
-  pool = multiprocessing.Pool(processes=8)
+  if multiproc_enabled:
+    pool = multiprocessing.Pool(processes=8)
+  lock_num_launched = multiprocessing.Lock()
+  num_launched = 0
+  pool_jobs = []
+
   update(wanted_end_sequence)
