@@ -896,6 +896,15 @@ class OscBBoxSaxWriter(OscSaxWriter):
             bbox[3] = lon
         return bbox
 
+    def dump_element_bbox(self, bbox):
+        # add some margin
+        bbox[0] -= 0.001
+        bbox[1] -= 0.001
+        bbox[2] += 0.001
+        bbox[3] += 0.001
+        self.Element("bbox", {"minlat":str(bbox[0]),"minlon":str(bbox[1]),
+                              "maxlat":str(bbox[2]),"maxlon":str(bbox[3])})
+
     def NodeNew(self, data, action):
         if not data:
             print "NodeNew - no data found..."
@@ -959,8 +968,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
         if bbox == None:
             print "way %d is empty" % data["id"]
         else:
-            self.Element("bbox", {"minlat":str(bbox[0]),"minlon":str(bbox[1]),
-                                  "maxlat":str(bbox[2]),"maxlon":str(bbox[3])})
+            self.dump_element_bbox(bbox)
         for (k, v) in data[u"tag"].items():
             self.Element("tag", {"k":k, "v":v})
         for n in data[u"nd"]:
@@ -1006,8 +1014,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
         if bbox == None:
             print "relation %d is empty" % data["id"]
         else:
-            self.Element("bbox", {"minlat":str(bbox[0]),"minlon":str(bbox[1]),
-                                  "maxlat":str(bbox[2]),"maxlon":str(bbox[3])})
+            self.dump_element_bbox(bbox)
         for (k, v) in data[u"tag"].items():
             self.Element("tag", {"k":k, "v":v})
         for m in data[u"member"]:
