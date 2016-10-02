@@ -104,12 +104,15 @@ import unittest
 class Test(unittest.TestCase):
 
     def setUp(self):
+        import os
         import shutil
         from modules import OsmBin
         shutil.rmtree("tmp-osmbin/", True)
         OsmBin.InitFolder("tmp-osmbin/")
         self.osmbin = OsmBin.OsmBin("tmp-osmbin/", "w")
         self.osmbin.Import("tests/000.osm")
+        if not os.path.exists("tests/out"):
+            os.makedirs("tests/out")
         del self.osmbin
 
     def tearDown(self):
