@@ -92,7 +92,7 @@
 </modify>
 <create>
 <way id="149" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.9500293" maxlon="12.7222708" minlon="6.8267236" maxlat="18.4815195"/>
+<bbox minlat="17.9490293" maxlon="12.7232708" minlon="6.8257236" maxlat="18.4825195"/>
 <tag k="to" v="polygon"/>
 <tag k="change" v="yes"/>
 <nd ref="147"/>
@@ -103,7 +103,7 @@
 <nd ref="156"/>
 </way>
 <way id="187" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.6839297" maxlon="7.0051756" minlon="6.8956309" maxlat="17.7798101"/>
+<bbox minlat="17.6829297" maxlon="7.0061756" minlon="6.8946309" maxlat="17.7808101"/>
 <tag k="to" v="outside"/>
 <tag k="change" v="yes"/>
 <nd ref="185"/>
@@ -118,7 +118,7 @@
 </create>
 <modify>
 <way id="243" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="18.3825686" maxlon="12.5040424" minlon="12.4319495" maxlat="18.4783218"/>
+<bbox minlat="18.3815686" maxlon="12.5050424" minlon="12.4309495" maxlat="18.4793218"/>
 <tag k="new_tag" v="1"/>
 <tag k="from" v="polygon"/>
 <tag k="change" v="yes"/>
@@ -131,7 +131,7 @@
 <nd ref="250"/>
 </way>
 <way id="354" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.688031" maxlon="12.3922984" minlon="7.0063663" maxlat="18.3449367"/>
+<bbox minlat="17.687031" maxlon="12.3932984" minlon="7.0053663" maxlat="18.3459367"/>
 <tag k="to" v="polygon"/>
 <tag k="from" v="polygon"/>
 <tag k="change" v="yes"/>
@@ -146,7 +146,7 @@
 <nd ref="363"/>
 </way>
 <way id="409" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.8575005" maxlon="6.9183204" minlon="6.889773" maxlat="17.9200821"/>
+<bbox minlat="17.8565005" maxlon="6.9193204" minlon="6.888773" maxlat="17.9210821"/>
 <tag k="new_tag" v="1"/>
 <tag k="from" v="outside"/>
 <tag k="change" v="yes"/>
@@ -158,7 +158,7 @@
 <nd ref="414"/>
 </way>
 <way id="431" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.8735118" maxlon="7.1120345" minlon="7.0709309" maxlat="17.9234773"/>
+<bbox minlat="17.8725118" maxlon="7.1130345" minlon="7.0699309" maxlat="17.9244773"/>
 <tag k="to" v="outside"/>
 <tag k="from" v="outside"/>
 <tag k="change" v="yes"/>
@@ -174,7 +174,7 @@
 <nd ref="429"/>
 </way>
 <way id="495" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.8101318" maxlon="12.6581442" minlon="6.8929658" maxlat="18.3438192"/>
+<bbox minlat="17.8091318" maxlon="12.6591442" minlon="6.8919658" maxlat="18.3448192"/>
 <tag k="to" v="polygon"/>
 <tag k="from" v="outside"/>
 <tag k="change" v="yes"/>
@@ -186,7 +186,7 @@
 <nd ref="502"/>
 </way>
 <way id="606" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.7293918" maxlon="12.5474109" minlon="7.030573" maxlat="18.3613973"/>
+<bbox minlat="17.7283918" maxlon="12.5484109" minlon="7.029573" maxlat="18.3623973"/>
 <tag k="to" v="polygon"/>
 <tag k="from" v="polygon"/>
 <tag k="change" v="yes"/>
