@@ -19,37 +19,39 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ##                                                                       ##
 ###########################################################################
-## Modified: WK-GiHu osc_modif.002
-##           Changed from Commandline --<Parameter> to default use unittest
-##           Added TestCase #4
-##           Added to Test.SetUp() - remove old tests/out/*.osc
-##           Added assert os.stat("tests/polygon.poly")
-##           Changed assert filecmp.cmp("tests/results/*","tests/out/*") to
-##                   os.stat("tests/out/*")
-###########################################################################
+## Modified: WK-GiHu osc_modif_101.py
 
-from modules import OsmBin,OsmSax,OsmGeom
+import sys, re, urllib, time
+from modules import OsmSax
 
 ###########################################################################
 
 def osc_modif(config, options):
 
-    reader = OsmBin.OsmBin(options.osmbin_path)
-    in_osc = OsmSax.OscSaxReader(options.source)
-
-    if options.position_only:
-        out_osc = OsmSax.OscPositionSaxWriter(options.dest, "UTF-8", reader)
-    elif options.poly:
+    if options.poly:
+        from modules import OsmGeom
         f = open(options.poly, "r")
         name = f.readline().strip()
         poly = OsmGeom.read_multipolygon(f)
         poly_buffered = poly.buffer(0.1, 8)
         f.close()
+    else:
+        poly = None
 
-        if poly:
-            out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, \
-                        OsmGeom.check_intersection, poly, poly_buffered)
-        
+    try:
+        from modules.OsmBin import OsmBin
+        if not hasattr(options, "osmbin_path"):
+            options.osmbin_path = "/data/work/osmbin/data/"
+        reader = OsmBin(options.osmbin_path)
+    except IOError:
+        from modules import OsmOsis
+        reader = OsmOsis.OsmOsis(config.dbs, config.dbp)
+
+    in_osc = OsmSax.OscSaxReader(options.source)
+    if options.position_only:
+        out_osc = OsmSax.OscPositionSaxWriter(options.dest, "UTF-8", reader)
+    elif poly:
+        out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, OsmGeom.check_intersection, poly, poly_buffered)
     elif options.bbox:
         out_osc = OsmSax.OscBBoxSaxWriter(options.dest, "UTF-8", reader)
     else:
@@ -57,124 +59,101 @@ def osc_modif(config, options):
         out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8")
 
     in_osc.CopyTo(out_osc)
-
     del in_osc
     del out_osc
     del reader
 
 
+if __name__ == "__main__":
+
+    class template_config:
+
+        db_base     = "osm"
+        db_user     = ""
+        db_password = ""
+        db_schema   = "osmosis"
+
+        def init(self):
+            self.db_string = "dbname=%s user=%s password=%s"%(self.db_base, self.db_user, self.db_password)
+
+    config = template_config()
+    config.init()
+
+    config.dbs = config.db_string
+    config.dbp = "osmosis"
+
+    from optparse import OptionParser
+
+    parser = OptionParser()
+    parser.add_option("--source", dest="source", action="store",
+                      help="Osc source file")
+    parser.add_option("--dest", dest="dest", action="store",
+                      help="Osc destination file")
+    parser.add_option("--position-only", dest="position_only", action="store_true",
+                      help="Only report positions")
+    parser.add_option("--poly", dest="poly", action="store",
+                      help="Polygon to use to limit changes")
+    parser.add_option("--bbox", dest="bbox", action="store_true",
+                      help="Add bounding-box to ways and relations")
+    (options, args) = parser.parse_args()
+
+    osc_modif(config, options)
+
 ###########################################################################
-import unittest,os,shutil,filecmp,stat
+import unittest
 
 class Test(unittest.TestCase):
- 
+    import os
+    rootPath = "tests"
+    outPath = os.path.join(rootPath, "out") 
+    
     def setUp(self):
+        import os
+        import shutil
+        from modules import OsmBin
         shutil.rmtree("tmp-osmbin/", True)
-
-        # remove old tests/out/*.osc
-        path = "tests/out/"
-        try:
-          fnames = os.listdir(path)
-          for name in fnames:
-            fpath = os.path.join(path, name)
-            try:
-              mode = os.lstat(fpath).st_mode
-            except os.error:
-              mode = 0
-
-            if not stat.S_ISDIR(mode):
-              try:
-                os.remove(fpath)
-                print("remove %s" % (fpath))
-              except os.error, err:
-                print("[FAIL] File %s could not be removed!" % (fpath))
-        except os.error, err:
-          print("[FAIL] Failed to clear %s!" % path)
-
         OsmBin.InitFolder("tmp-osmbin/")
         self.osmbin = OsmBin.OsmBin("tmp-osmbin/", "w")
         self.osmbin.Import("tests/000.osm")
+        
+        if not os.path.exists( self.outPath ):
+            os.makedirs( self.outPath )
+        else:
+          from modules.helperLib import remove
+          # remove old <outPath>*.osc files
+          remove( os.path.join(self.outPath, "*.osc") )
+
         del self.osmbin
 
     def tearDown(self):
-        #from modules import OsmBin
+        import shutil
+        from modules import OsmBin
         self.osmbin = OsmBin.OsmBin("tmp-osmbin/", "w")
         del self.osmbin
         shutil.rmtree("tmp-osmbin/")
 
-    def compare_files(self, opt):
-        fname = shutil._basename(opt.dest)
-
-        #shallow -- Just check stat signature (do not read the files).
-        #           defaults to True.
-        return filecmp.cmp("tests/results/"+fname, opt.dest)
-        #return os.stat(opt.dest)
+    def compare_files(self, aDigest, b):
+        from modules.helperLib import hash_file
+        return hash_file(b).cmp(aDigest)
 
     def test(self):
         class osc_modif_options:
-          TestCase = 0
+            source = "tests/001.osc"
+            dest = "tests/out/001.bbox.osc"
+            poly = False
+            bbox = True
+            position_only = False
+            osmbin_path = "tmp-osmbin/"
+        osc_modif(None, osc_modif_options)
 
-          source = "tests/001.osc"
-          dest = "tests/out/"
-          poly = False
-          bbox = False
-          position_only = False
-          osmbin_path = "tmp-osmbin/"
+        assert self.compare_files('03a720a5b8c79f6c1bc486be5eb1e879', "tests/out/001.bbox.osc")
 
-          def __init__(self,dest):
-            self.dest += dest
-            osc_modif_options.TestCase += 1
-            print(".")
-            print("Begin TestCase #%s" % (osc_modif_options.TestCase))
+        class osc_modif_options:
+            source = "tests/out/001.bbox.osc"
+            dest = "tests/out/001.poly.osc"
+            poly = "tests/polygon.poly"
+            position_only = False
+            osmbin_path = "tmp-osmbin/"
+        osc_modif(None, osc_modif_options)
 
-          def __del__(self):
-            print("End TestCase #%s" % (osc_modif_options.TestCase))
-
-          def cmpFileSignature(self,cmp):
-            results = "tests/results/"+shutil._basename(self.dest)
-            assert cmp(self), "File %s and %s has different signatur!" % (self.dest,results)
-
-          def stat_tests_out(self):
-            try:
-              stat = os.stat(self.dest)
-            except os.error, err:
-              print("[ERROR] No File %s generated!" % (self.dest))
-
-        #end of class
-
-        #1
-        opt = osc_modif_options("001.pos.osc")
-        setattr(opt,'position_only',True)
-        osc_modif(None, opt )
-        #assert self.compare_files(opt)
-        opt.stat_tests_out()
-        del opt
-
-        #2
-        opt = osc_modif_options("001.bbox.osc")
-        setattr(opt,'bbox',True)
-        osc_modif(None, opt )
-        #opt.cmpFileSignature(self.compare_files)
-        opt.stat_tests_out()
-        del opt
-
-        #3
-        opt = osc_modif_options("001.poly.osc")
-        setattr(opt,'source',"tests/out/001.bbox.osc")
-        setattr(opt,'poly',"tests/polygon.poly")
-        assert os.stat(opt.poly)
-
-        osc_modif(None, opt )
-        #opt.cmpFileSignature(self.compare_files)
-        opt.stat_tests_out()
-        del opt
-
-        #4
-        opt = osc_modif_options("001.dummy.osc")
-        osc_modif(None, opt )
-        #assert self.compare_files(opt)
-        opt.stat_tests_out()
-        del opt
-
-if __name__ == "__main__":
-  unittest.main()
+        assert self.compare_files('e83aa99d6f72111d2a885b4dbd9e607a', "tests/out/001.poly.osc")
