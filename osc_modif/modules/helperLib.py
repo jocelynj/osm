@@ -141,12 +141,6 @@ class TestCase(unittest.TestCase):
   #end def _hash_file
   
   def _remove(self):
-    def createX(fname):
-      """ Create a sample file from 'fname' - Return Filepath """
-      fpath = fpath = os.path.join(self.rootPath, fname)
-      appendString( fpath )
-      return fpath
-    #end def create
     def create(fname):
       """ Create a sample file from 'fname'
           Replace given Wildcard (*|?) with 'X'
