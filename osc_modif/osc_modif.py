@@ -19,7 +19,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ##                                                                       ##
 ###########################################################################
-## Modified: WK-GiHu osc_modif_101.py
+## Modified: WK-GiHu osc_modif_102.py
 
 import sys, re, urllib, time
 from modules import OsmSax
@@ -132,9 +132,12 @@ class Test(unittest.TestCase):
         del self.osmbin
         shutil.rmtree("tmp-osmbin/")
 
-    def compare_files(self, aDigest, b):
+    def compare_files(self,fname):
+        import os
         from modules.helperLib import hash_file
-        return hash_file(b).cmp(aDigest)
+        return hash_file( os.path.join(self.outPath, fname) ).hexdigest()\
+               == \
+               hash_file( os.path.join("tests/results", fname) ).hexdigest()
 
     def test(self):
         class osc_modif_options:
@@ -146,7 +149,7 @@ class Test(unittest.TestCase):
             osmbin_path = "tmp-osmbin/"
         osc_modif(None, osc_modif_options)
 
-        assert self.compare_files('03a720a5b8c79f6c1bc486be5eb1e879', "tests/out/001.bbox.osc")
+        assert self.compare_files("001.bbox.osc")
 
         class osc_modif_options:
             source = "tests/out/001.bbox.osc"
@@ -156,4 +159,4 @@ class Test(unittest.TestCase):
             osmbin_path = "tmp-osmbin/"
         osc_modif(None, osc_modif_options)
 
-        assert self.compare_files('e83aa99d6f72111d2a885b4dbd9e607a', "tests/out/001.poly.osc")
+        assert self.compare_files("001.poly.osc")
