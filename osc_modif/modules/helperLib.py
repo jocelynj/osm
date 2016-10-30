@@ -18,7 +18,7 @@ class hash_file():
 
   def hexdigest(self):
     return self.md5.hexdigest()
-    
+
   def cmp_tuple(self,hdigest):
     """ Return tuple(string(OK|FAIL), description, hexdigest) """
     fHash = self.md5.hexdigest()
@@ -46,13 +46,13 @@ def remove(fpath,trace=True):
   regex = name
   # Escape first dot
   i = name.find('.')
-  if i >= 0: regex = name[0:i]+'\\'+name[i:len(name)]
+  if i >= 0: regex = name[0:i]+'\\'+name[i:]
   # Make first * = .+
   i = regex.find('*')
-  if i >= 0: regex = regex[0:i]+'.+'+regex[i+1:len(regex)]
+  if i >= 0: regex = regex[0:i]+'.+'+regex[i+1:]
   # Make first ? = .
   i = regex.find('?')
-  if i >= 0: regex = regex[0:i]+'.'+regex[i+1:len(regex)]
+  if i >= 0: regex = regex[0:i]+'.'+regex[i+1:]
   rObj = re.compile(regex,re.UNICODE)
 
   #print("\tname=%s, path=%s" % (name,path))
@@ -79,7 +79,7 @@ def remove(fpath,trace=True):
   except os.error, err:
     if trace: print("[FAIL] No such directory: %s!" % path)
     return False
-    
+
 #end def remove
 
 def appendString(fpath, s=u'appendString::Teststring'):
@@ -100,7 +100,7 @@ class TestCase(unittest.TestCase):
     self.rootPath = os.path.join(rootPath, "helperLib")
 
     TestCase.iTests += 1
-    
+
     if TestCase.iTests == 1:
       # Run this suite ONCE per class TestCase
       print("%s.__init__" % (__name__))
@@ -134,12 +134,12 @@ class TestCase(unittest.TestCase):
     self.assertTrue( hash_file(fpath).cmp(hdigest) )
     self.assertTrue( hash_file(fpath).cmp_tuple(hdigest)[0] == 'OK')
     self.assertTrue( hash_file(fpath).cmp_tuple('dummy')[0] == 'FAIL')
-    
+
     # ShakeUp sample file
     appendString(fpath)
     self.assertFalse( hash_file(fpath) == hdigest)
   #end def _hash_file
-  
+
   def _remove(self):
     def create(fname):
       """ Create a sample file from 'fname'
@@ -148,9 +148,10 @@ class TestCase(unittest.TestCase):
       """
       fname2 = fname
       i = fname.find('*')
-      if i >= 0: fname = fname[0:i]+'X'+fname[i+1:len(fname)]
+      if i >= 0: fname = fname[0:i]+'X'+fname[i+1:]
       i = fname.find('?')
-      if i >= 0: fname = fname[0:i]+'X'+fname[i+1:len(fname)]
+      if i >= 0: fname = fname[0:i]+'X'+fname[i+1:]
+      print fname
 
       fpath = fpath = os.path.join(self.rootPath, fname)
       appendString( fpath )
@@ -160,16 +161,16 @@ class TestCase(unittest.TestCase):
     print("%s._remove using dir %s" % (__name__,self.rootPath))
     # Try to remove non existing path
     self.assertFalse( remove( '123456/test/*', False ) )
-    
+
     fpath = create('remove')
     self.assertTrue( remove( fpath ) )
     # Try to remove none existing file second time
     self.assertTrue( remove( fpath ) )
 
     # Wildcard in path
-    fpath2 = fpath; fpath2 = fpath2[0:3]+'?'+fpath2[4:len(fpath2)]
+    fpath2 = fpath; fpath2 = fpath2[0:3]+'?'+fpath2[4:]
     self.assertFalse( remove( fpath2 ) )
-    fpath2 = fpath; fpath2 = fpath2[0:3]+'*'+fpath2[4:len(fpath2)]
+    fpath2 = fpath; fpath2 = fpath2[0:3]+'*'+fpath2[4:]
     self.assertFalse( remove( fpath2 ) )
 
     # Wildcard in fname, name, ext
