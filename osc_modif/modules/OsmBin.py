@@ -25,7 +25,7 @@
 ###########################################################################
 # 1. mkdir /data/osmbin
 # 2. ./OsmBin.py --init /data/osmbin
-# 3. wget -O - -o /dev/null http://planet.openstreetmap.org/planet-latest.osm.bz2 \
+# 3. wget -O - -o /dev/null https://planet.openstreetmap.org/planet-latest.osm.bz2 \
 #    | bunzip2
 #    | ./OsmBin.py --import /data/osmbin -
 

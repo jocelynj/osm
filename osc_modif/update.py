@@ -64,7 +64,7 @@ for (k,v) in dependencies.iteritems():
     if c in top_countries:
       top_countries.remove(c)
 
-remote_diff_url = "http://planet.openstreetmap.org/replication/" + type_replicate
+remote_diff_url = "https://planet.openstreetmap.org/replication/" + type_replicate
 lock_file = os.path.join(work_path, "update.lock")
 
 ###########################################################################
