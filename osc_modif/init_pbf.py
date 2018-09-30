@@ -54,7 +54,7 @@ def init_pbf(dirpath, filenames, options):
       print f
       continue
     need_launch = True
-    cmd += ["--tee", "--bounding-polygon", "file=%s" % os.path.join(dirpath, f)]
+    cmd += ["--tee", "--bounding-polygon", "completeRelations=yes", "file=%s" % os.path.join(dirpath, f)]
     cmd += ["--write-pbf", os.path.join(country_dir[f], ".".join(f.split(".")[:-1]) + ".osm.tmp.pbf")]
 
   cmd += ["--write-null"]
