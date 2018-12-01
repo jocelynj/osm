@@ -27,8 +27,11 @@ import subprocess
 
 # configuration
 osmosis_bin = "/data/project/osmbin/osmosis-0.43.1/bin/osmosis"
+osmium_bin = "/usr/bin/osmium"
+osmium_config_file = "/tmp/osmium_config"
 work_path = "/data/work/osmbin/"
 work_pbfs_path = os.path.join(work_path, "extracts")
+limit_country = 5
 
 planet_url = "http://planet.openstreetmap.org/pbf/planet-latest.osm.pbf"
 planet_file = os.path.join(work_pbfs_path, "planet-latest.osm.pbf")
@@ -44,20 +47,45 @@ def init_pbf(dirpath, filenames, options):
     orig_pbf = os.path.join(work_pbfs_path, dirpath, os.path.basename(dirpath) + ".osm.pbf")
   need_launch = False
   country_dir = {}
+  pwd = os.getcwd()
   cmd += ["--read-pbf", orig_pbf]
+
+  osmium_cmd  = [osmium_bin]
+  osmium_cmd += ["extract", "--config", osmium_config_file, orig_pbf]
+  osmium_config_begin  = '{\n'
+  osmium_config_begin += '    "extracts": [\n'
+  osmium_config_list = []
   for f in filenames:
     country_dir[f] = os.path.join(work_pbfs_path, dirpath, f.split(".")[0])
     if not os.path.isdir(country_dir[f]):
       os.makedirs(country_dir[f])
 
     if options.country and f.split(".")[0] not in options.country:
-      print f
       continue
+    print f
     need_launch = True
-    cmd += ["--tee", "--bounding-polygon", "completeRelations=yes", "file=%s" % os.path.join(dirpath, f)]
-    cmd += ["--write-pbf", os.path.join(country_dir[f], ".".join(f.split(".")[:-1]) + ".osm.tmp.pbf")]
+    dst_poly = os.path.join(pwd, dirpath, f)
+    dst_pbf = os.path.join(country_dir[f], ".".join(f.split(".")[:-1]) + ".osm.tmp.pbf")
+    try:
+      os.remove(dst_pbf)
+    except OSError:
+      pass
+    cmd += ["--tee", "--bounding-polygon", "completeWays=yes", "completeRelations=no", "cascadingRelations=no", "file=%s" % dst_poly]
+    cmd += ["--write-pbf", dst_pbf]
+
+    osmium_config  = '       {\n'
+    osmium_config += '           "output": "%s",\n' % dst_pbf
+    osmium_config += '           "output_format": "pbf",\n'
+    osmium_config += '           "polygon": {\n'
+    osmium_config += '               "file_name": "%s",\n' % dst_poly
+    osmium_config += '               "file_type": "poly",\n'
+    osmium_config += '           }\n'
+    osmium_config += '       },\n'
+    osmium_config_list.append(osmium_config)
 
   cmd += ["--write-null"]
+  osmium_config_end  = '    ]\n'
+  osmium_config_end += '}\n'
 
   if not need_launch:
     return
@@ -81,8 +109,28 @@ def init_pbf(dirpath, filenames, options):
     return
 
   if not options.only_state:
-    print cmd
-    subprocess.check_call(cmd)
+    if options.osmium:
+      num_runs = max(1, (len(osmium_config_list) + 1) // limit_country)
+      first = 0
+      last = (len(osmium_config_list) // num_runs)
+      for run in range(num_runs):
+        if run == num_runs-1:
+          last = len(osmium_config_list)
+
+        print "  run %d with %d countries" % (run, last-first)
+        osmium_config = "".join(osmium_config_list[first:last])
+        with open(osmium_config_file, "w") as f:
+          f.write(osmium_config_begin)
+          f.write(osmium_config)
+          f.write(osmium_config_end)
+        print osmium_cmd
+        subprocess.check_call(osmium_cmd)
+
+        first = last
+        last += len(osmium_config_list) // num_runs
+    else:
+      print cmd
+      subprocess.check_call(cmd)
 
   for f in filenames:
     if options.country and f.split(".")[0] not in options.country:
@@ -104,6 +152,8 @@ if __name__ == '__main__':
   import argparse
 
   parser = argparse.ArgumentParser(description="Initialise pbf files for extracts")
+  parser.add_argument("--osmium", dest="osmium", action="store_true", default=False,
+                      help="Use osmium instead of osmosis")
   parser.add_argument("--planet", dest="planet", action="store_true", default=False,
                       help="Download whole planet")
   parser.add_argument("--only-state", dest="only_state", action="store_true", default=False,
