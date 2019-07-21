@@ -177,7 +177,12 @@ if __name__ == '__main__':
 
   os.chdir("polygons")
   for (r,d,files) in os.walk("."):
+    if r == ".":
+      region = r
+    else: # remove initial "./"
+      region = r[2:]
+
     if args.list_region:
-      print r[2:]
-    elif not args.region or r[2:] in args.region:
+      print region
+    elif not args.region or region in args.region:
       init_pbf(r, files, args)
