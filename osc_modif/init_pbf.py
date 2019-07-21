@@ -45,6 +45,10 @@ def init_pbf(dirpath, filenames, options):
     orig_pbf = planet_file
   else:
     orig_pbf = os.path.join(work_pbfs_path, dirpath, os.path.basename(dirpath) + ".osm.pbf")
+    if not os.path.isfile(orig_pbf):
+      up = os.path.dirname(os.path.dirname(orig_pbf))
+      orig_pbf = os.path.join(up, os.path.basename(up) + ".osm.pbf")
+      print orig_pbf
   need_launch = False
   country_dir = {}
   pwd = os.getcwd()
