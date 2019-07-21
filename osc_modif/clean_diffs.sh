@@ -4,9 +4,11 @@ set -e
 
 G_WORKDIR=/data/work/osmbin/replication/diffs/
 
-cd $G_WORKDIR
+cd polygons
 
-minute_dirs=$(echo */minute */*/minute */*/*/minute)
+minute_dirs=$(find -name "*.poly" | sed "s%.poly%/minute%")
+
+cd $G_WORKDIR
 
 num=$(cat planet/minute/state.txt | grep sequenceNumber | cut -d= -f2)
 oldest=$(($num - 3*30*24*60))  # keep 3 months of diff
