@@ -39,7 +39,7 @@ def osc_modif(config, options):
 
     try:
         from modules.OsmBin import OsmBin
-        if not hasattr(options, "osmbin_path"):
+        if not hasattr(options, "osmbin_path") or not options.osmbin_path:
             options.osmbin_path = "/data/work/osmbin/data/"
         reader = OsmBin(options.osmbin_path)
     except IOError:
@@ -84,6 +84,8 @@ if __name__ == "__main__":
     from optparse import OptionParser
 
     parser = OptionParser()
+    parser.add_option("--osmbin", dest="osmbin_path", action="store",
+                      help="Path to osmbin database")
     parser.add_option("--source", dest="source", action="store",
                       help="Osc source file")
     parser.add_option("--dest", dest="dest", action="store",
