@@ -375,6 +375,33 @@ class OsmBin:
                 dta += self.RelationFullRecur(m["ref"], WayNodes = WayNodes, RaiseOnLoop = RaiseOnLoop, RecurControl = RecurControl+[RelationId])
         return dta
 
+    def RelationNodesFullRecur(self, RelationId, RecurControl = []):
+        rel = self.RelationGet(RelationId)
+        nodes = []
+        for m in rel["member"]:
+            if m["type"] == "node":
+                n = self.NodeGet(m["ref"])
+                nodes.append((n["lat"], n["lon"]))
+            elif m["type"] == "way":
+                way = self.WayGet(m["ref"])
+                if not way:
+                    raise MissingDataError("missing way %d"%m["ref"])
+                for n in way["nd"]:
+                    np = self.NodeGet(n)
+                    if not np:
+                        raise MissingDataError("missing node %d" % n)
+                    nodes.append((np["lat"], np["lon"]))
+            elif m["type"] == "relation":
+                if m["ref"] == RelationId:
+                    continue
+                if m["ref"] in RecurControl:
+                    continue
+                nodes.extend(self.RelationNodesFullRecur(m["ref"], RecurControl = RecurControl+[RelationId]))
+
+        return nodes
+
+
+
     #######################################################################
     ## user functions
 
@@ -443,6 +470,9 @@ if __name__=="__main__":
         if sys.argv[3]=="relation_full":
             import pprint
             pprint.pprint(i.RelationFullRecur(int(sys.argv[4])))
+        if sys.argv[3]=="relation_nodes":
+            import pprint
+            pprint.pprint(i.RelationNodesFullRecur(int(sys.argv[4])))
             
     if sys.argv[1]=="--pyro":
         import Pyro.core
@@ -599,6 +629,12 @@ class Test(unittest.TestCase):
         with self.assertRaises(RelationLoopError) as cm:
             self.a.RelationFullRecur(7801)
         self.assertEquals(str(cm.exception), "RelationLoopError(member loop [7801, 7802, 7801])")
+
+    def test_relation_points_full(self):
+        res = self.a.RelationNodesFullRecur(529891)
+        self.assertEquals(len(res), 2)
+        self.assertEquals(res[0], (17.9098192, -62.8166325))
+        self.assertEquals(res[1], (17.9106019, -62.8157998))
 
     def test_update(self):
         self.check_node(self.a.NodeGet, 1759873129)
