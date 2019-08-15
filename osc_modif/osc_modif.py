@@ -52,7 +52,7 @@ def osc_modif(config, options):
     elif poly:
         out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, OsmGeom.check_intersection, poly, poly_buffered)
     elif options.bbox:
-        out_osc = OsmSax.OscBBoxSaxWriter(options.dest, "UTF-8", reader)
+        out_osc = OsmSax.OscBBoxSaxWriter(options.dest, "UTF-8", reader, dump_relations_path=options.dump_relations_path)
     else:
 #        out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8", reader)
         out_osc = OsmSax.OscSaxWriter(options.dest, "UTF-8")
@@ -86,6 +86,8 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("--osmbin", dest="osmbin_path", action="store",
                       help="Path to osmbin database")
+    parser.add_option("--dump-relations", dest="dump_relations_path", action="store",
+                      help="Path to dump relations nodes list")
     parser.add_option("--source", dest="source", action="store",
                       help="Osc source file")
     parser.add_option("--dest", dest="dest", action="store",
@@ -136,6 +138,7 @@ class Test(unittest.TestCase):
             bbox = True
             position_only = False
             osmbin_path = "tmp-osmbin/"
+            dump_relations_path = None
         osc_modif(None, osc_modif_options)
 
         assert self.compare_files("tests/results/001.bbox.osc", "tests/out/001.bbox.osc")
@@ -146,6 +149,7 @@ class Test(unittest.TestCase):
             poly = "tests/polygon.poly"
             position_only = False
             osmbin_path = "tmp-osmbin/"
+            dump_relations_path = None
         osc_modif(None, osc_modif_options)
 
         assert self.compare_files("tests/results/001.poly.osc", "tests/out/001.poly.osc")

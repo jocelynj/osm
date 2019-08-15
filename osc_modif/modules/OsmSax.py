@@ -20,6 +20,7 @@
 ###########################################################################
 
 import re, commands, sys, os, time, bz2, xml, gzip, cStringIO
+import pickle
 from xml.sax import make_parser, handler
 from xml.sax.saxutils import XMLGenerator, quoteattr
 from OrderedDict import OrderedDict
@@ -851,9 +852,11 @@ class OscFilterSaxWriter(OscSaxWriter):
 
 class OscBBoxSaxWriter(OscSaxWriter):
 
-    def __init__(self, out, enc, reader):
+    def __init__(self, out, enc, reader, dump_relations_path=None):
         XMLGenerator.__init__(self, GetFile(out, "w"), enc)
         self.reader = reader
+        self.dump_relations_path = dump_relations_path
+
 
         self.num_read_nodes = 0
         self.num_read_ways = 0
@@ -863,6 +866,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
         self.startElement(u"osmChange", { u"version": u"0.6",
                                           u"generator": u"OsmSax" })
         self._prev_action = ""
+        # Store nodes (=old+new position of nodes)
         self.nodes_modified = {}
         self.ways_modified = {}
         self.rels_modified = {}
@@ -896,6 +900,15 @@ class OscBBoxSaxWriter(OscSaxWriter):
             bbox[3] = lon
         return bbox
 
+    def compute_bbox(self, nodes):
+        lats = [lat for lat,lon in nodes]
+        lons = [lon for lat,lon in nodes]
+        minlat = min(lats)
+        maxlat = max(lats)
+        minlon = min(lons)
+        maxlon = max(lons)
+        return [minlat, minlon, maxlat, maxlon]
+
     def dump_element_bbox(self, bbox):
         # add some margin
         bbox[0] -= 0.001
@@ -927,28 +940,29 @@ class OscBBoxSaxWriter(OscSaxWriter):
             self.Element("node", _formatData(data))
 
     def NodeBBox(self, id, data = None, action = None):
+        nodes = self.NodeNodes(id, data, action)
+        bbox = self.compute_bbox(nodes)
+        return bbox
+
+    def NodeNodes(self, id, data = None, action = None):
         if id in self.nodes_modified:
             return self.nodes_modified[id]
-        bbox = None
+        nodes = []
         if data:
-            bbox = self.expand_bbox(None, data["lat"], data["lon"])
+            nodes.append((data["lat"], data["lon"]))
             if action == "create":
-                self.nodes_modified[id] = bbox
-                return bbox
+                self.nodes_modified[id] = nodes
+                return nodes
 
-        data = self.reader.NodeGet(id)
+        data_old = self.reader.NodeGet(id)
         self.num_read_nodes += 1
-        if not data:
-            if not bbox:
-                print "node %d is empty" % id
-            self.nodes_modified[id] = bbox
-            return bbox
+        if not data_old:
+            self.nodes_modified[id] = nodes
+            return nodes
 
-        bbox = self.expand_bbox(bbox, data["lat"], data["lon"])
-        self.nodes_modified[id] = bbox
-        if bbox[0] == -180 and bbox[1] == -180:
-            print "error on node %d" % id
-        return bbox
+        nodes.append((data_old["lat"], data_old["lon"]))
+        self.nodes_modified[id] = nodes
+        return nodes
 
     def WayNew(self, data, action):
         if not data:
@@ -976,26 +990,32 @@ class OscBBoxSaxWriter(OscSaxWriter):
         self.endElement("way")
 
     def WayBBox(self, id, data = None, action = None):
+        nodes = self.WayNodes(id, data, action)
+        bbox = self.compute_bbox(nodes)
+        return bbox
+
+    def WayNodes(self, id, data = None, action = None):
         if id in self.ways_modified:
             return self.ways_modified[id]
-        bbox = None
+        nodes = []
         if data:
             for n in data[u"nd"]:
-                bbox = self.concat_bbox(bbox, self.NodeBBox(n))
+                nodes.extend(self.NodeNodes(n))
             if action == "create":
-                self.ways_modified[id] = bbox
-                return bbox
+                self.ways_modified[id] = nodes
+                return nodes
 
         data = self.reader.WayGet(id)
         self.num_read_ways += 1
         if not data:
-            self.ways_modified[id] = bbox
-            return bbox
+            self.ways_modified[id] = nodes
+            return nodes
 
         for n in data[u"nd"]:
-            bbox = self.concat_bbox(bbox, self.NodeBBox(n))
-        self.ways_modified[id] = bbox
-        return bbox
+            nodes.extend(self.NodeNodes(n))
+        self.ways_modified[id] = nodes
+        return nodes
+
 
     def RelationNew(self, data, action):
         if not data:
@@ -1022,49 +1042,62 @@ class OscBBoxSaxWriter(OscSaxWriter):
             self.Element("member", m)
         self.endElement("relation")
 
-    def RelationBBox(self, id, data = None, action = None, rec_rel = []):
-        if id in rec_rel:
-            print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
-            return None
-        if id in self.rels_modified:
-            return self.rels_modified[id]
-        bbox = None
-        if data:
-            for m in data[u"member"]:
-                ref = m[u"ref"]
-                if m[u"type"] == u"node":
-                    bbox = self.concat_bbox(bbox, self.NodeBBox(ref))
-                elif m[u"type"] == u"way":
-                    bbox = self.concat_bbox(bbox, self.WayBBox(ref))
-                elif m[u"type"] == u"relation":
-                    bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
-            if action == "create":
-                self.rels_modified[id] = bbox
-                return bbox
+    def RelationBBox(self, id, data = None, action = None):
+        nodes = self.RelationNodes(id, data, action)
+        bbox = self.compute_bbox(nodes)
 
-        data = self.reader.RelationGet(id)
-        self.num_read_relations += 1
-        if not data:
-            self.rels_modified[id] = bbox
-            return bbox
-
-        for m in data[u"member"]:
-            ref = m[u"ref"]
-            if m[u"type"] == u"node":
-                bbox = self.concat_bbox(bbox, self.NodeBBox(ref))
-            elif m[u"type"] == u"way":
-                bbox = self.concat_bbox(bbox, self.WayBBox(ref))
-            elif m[u"type"] == u"relation":
-                bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
-        self.rels_modified[id] = bbox
-        if len(data[u"member"]) == 0:
-            print "relation %d is empty [bbox=%s]" % (id, bbox)
-        elif bbox == None or (bbox[0] == -180 and bbox[1] == -180):
+        if bbox == None or (bbox[0] == -180 and bbox[1] == -180):
             print "potential error on relation %d" % id
             print bbox
             import pprint
             pprint.pprint(data)
             bbox = self.expand_bbox(bbox, -89, -189)
             bbox = self.expand_bbox(bbox,  89,  189)
-            return bbox
+
+        if self.dump_relations_path:
+            if abs(bbox[0] - bbox[2]) > 0.5 or abs(bbox[1] - bbox[3]) > 0.5:
+                filename = os.path.join(self.dump_relations_path, '%d.nodes' % id)
+                with open(filename, 'wb') as fp:
+                    pickle.dump(nodes, fp, pickle.HIGHEST_PROTOCOL)
+
         return bbox
+
+    def RelationNodes(self, id, data = None, action = None, rec_rel = []):
+        if id in rec_rel:
+            print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
+            return None
+        if id in self.rels_modified:
+            return self.rels_modified[id]
+        nodes = []
+        if data:
+            for m in data[u"member"]:
+                ref = m[u"ref"]
+                if m[u"type"] == u"node":
+                    nodes.extend(self.NodeNodes(ref))
+                elif m[u"type"] == u"way":
+                    nodes.extend(self.WayNodes(ref))
+                elif m[u"type"] == u"relation":
+                    nodes.extend(self.RelationNodes(ref, rec_rel=rec_rel + [id]))
+            if action == "create":
+                self.rels_modified[id] = nodes
+                return nodes
+
+        data = self.reader.RelationGet(id)
+        self.num_read_relations += 1
+        if not data:
+            self.rels_modified[id] = nodes
+            return nodes
+
+        for m in data[u"member"]:
+            ref = m[u"ref"]
+            if m[u"type"] == u"node":
+                nodes.extend(self.NodeNodes(ref))
+            elif m[u"type"] == u"way":
+                nodes.extend(self.WayNodes(ref))
+            elif m[u"type"] == u"relation":
+                nodes.extend(self.RelationNodes(ref, rec_rel=rec_rel + [id]))
+
+        self.rels_modified[id] = nodes
+        if len(data[u"member"]) == 0:
+            print "relation %d is empty [nodes=%s]" % (id, nodes)
+        return nodes

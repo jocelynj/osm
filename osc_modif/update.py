@@ -96,6 +96,7 @@ def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path
     poly = False
     bbox = True
     position_only = False
+    dump_relations_path = None
 
   # apply polygon
   print time.strftime("%H:%M:%S"), "  generate bbox"
@@ -123,6 +124,7 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
     dest = modif_diff_file + "-tmp.osc.gz"
     poly = modif_poly
     position_only = False
+    dump_relations_path = None
 
   # apply polygon
 #  print time.strftime("%H:%M:%S"), "  apply polygon", modif_poly
