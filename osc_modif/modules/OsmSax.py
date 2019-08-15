@@ -645,7 +645,7 @@ class OscPositionSaxWriter(OscSaxWriter):
 
 class OscFilterSaxWriter(OscSaxWriter):
 
-    def __init__(self, out, enc, reader = None, check_intersection = None, poly = None, poly_buffered = None):
+    def __init__(self, out, enc, reader = None, check_intersection = None, poly = None, poly_buffered = None, dump_relations_path = None):
         XMLGenerator.__init__(self, GetFile(out, "w"), enc)
         self.reader = reader
         self.check_intersection = check_intersection
@@ -653,6 +653,7 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.poly.append(poly)
         self.poly.append(poly_buffered)
         self.poly_num = 2
+        self.dump_relations_path = dump_relations_path
 
         self.num_read_nodes = 0
         self.num_read_ways = 0
@@ -824,6 +825,16 @@ class OscFilterSaxWriter(OscSaxWriter):
             if not self.check_intersection(self.poly[poly_idx], data["bbox"]):
                 return False
 
+        if self.dump_relations_path:
+            filename = os.path.join(self.dump_relations_path, '%d.nodes' % id)
+            if os.path.exists(filename):
+                with open(filename, 'rb') as fp:
+                    nodes = pickle.load(fp)
+                for n in nodes:
+                    if self.check_intersection(self.poly[poly_idx], (n[0], n[1])):
+                        return True
+                return False
+
         if not data or len(data["member"]) == 0:
             if id in rec_rel:
                 print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
@@ -839,12 +850,15 @@ class OscFilterSaxWriter(OscSaxWriter):
             ref = m[u"ref"]
             if m[u"type"] == u"node":
                 if self.NodeWithinPoly(poly_idx, ref):
+                    print("node",ref)
                     return True
             elif m[u"type"] == u"way":
                 if self.WayWithinPoly(poly_idx, ref):
+                    print("way",ref)
                     return True
             elif m[u"type"] == u"relation":
                 if self.RelationWithinPoly(poly_idx, ref, rec_rel=rec_rel + [id]):
+                    print("relation",ref)
                     return True
         return False
 

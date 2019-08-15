@@ -50,7 +50,7 @@ def osc_modif(config, options):
     if options.position_only:
         out_osc = OsmSax.OscPositionSaxWriter(options.dest, "UTF-8", reader)
     elif poly:
-        out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, OsmGeom.check_intersection, poly, poly_buffered)
+        out_osc = OsmSax.OscFilterSaxWriter(options.dest, "UTF-8", reader, OsmGeom.check_intersection, poly, poly_buffered, dump_relations_path=options.dump_relations_path)
     elif options.bbox:
         out_osc = OsmSax.OscBBoxSaxWriter(options.dest, "UTF-8", reader, dump_relations_path=options.dump_relations_path)
     else:
