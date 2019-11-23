@@ -98,7 +98,7 @@ def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path
     position_only = False
 
   # apply polygon
-  print time.strftime("%H:%M:%S"), "  generate bbox"
+  print time.strftime("%Y-%m-%d %H:%M:%S"), "  generate bbox"
   sys.stdout.flush()
   osc_modif.osc_modif(None, osc_modif_options)
   os.rename(modif_diff_file + "-tmp.osc.gz", modif_diff_file + ".osc.gz")
@@ -109,7 +109,7 @@ def generate_bbox_diff(orig_diff_path, file_location, file_date, modif_diff_path
   modif_state_file = os.path.join(modif_diff_path, "state.txt")
   update_symlink(modif_diff_file + ".state.txt", modif_state_file)
   os.utime(modif_state_file, (file_date, file_date))
-  print time.strftime("%H:%M:%S"), "  finish bbox"
+  print time.strftime("%Y-%m-%d %H:%M:%S"), "  finish bbox"
   sys.stdout.flush()
 
 
@@ -125,8 +125,8 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
     position_only = False
 
   # apply polygon
-#  print time.strftime("%H:%M:%S"), "  apply polygon", modif_poly
-#  sys.stdout.flush()
+  print time.strftime("%Y-%m-%d %H:%M:%S"), "  apply polygon", modif_poly
+  sys.stdout.flush()
   osc_modif.osc_modif(None, osc_modif_options)
   os.rename(modif_diff_file + "-tmp.osc.gz", modif_diff_file + ".osc.gz")
   os.utime(modif_diff_file + ".osc.gz", (file_date, file_date))
@@ -136,8 +136,8 @@ def generate_diff(orig_diff_path, file_location, file_date, modif_poly, modif_di
   modif_state_file = os.path.join(modif_diff_path, "state.txt")
   update_symlink(modif_diff_file + ".state.txt", modif_state_file)
   os.utime(modif_state_file, (file_date, file_date))
-  print time.strftime("%H:%M:%S"), "  finish polygon", modif_poly
-#  sys.stdout.flush()
+  print time.strftime("%Y-%m-%d %H:%M:%S"), "  finish polygon", modif_poly
+  sys.stdout.flush()
 
   return (country, file_location, file_date)
 
@@ -222,7 +222,7 @@ def update(wanted_end_sequence=None):
 
   # download diffs, and apply the polygon on them
   for i in xrange(begin_sequence + 1, end_sequence + 1):
-    print time.strftime("%H:%M:%S"), i
+    print time.strftime("%Y-%m-%d %H:%M:%S"), i
     for path in [orig_diff_path] + modif_diff_path + [bbox_diff_path]:
       tmp_path = os.path.join(path, "%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000))
       if not os.path.exists(tmp_path):
@@ -231,7 +231,7 @@ def update(wanted_end_sequence=None):
     file_location = "%03d/%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000, i % 1000)
 
     # download diff file
-    print time.strftime("%H:%M:%S"), "  download diff"
+    print time.strftime("%Y-%m-%d %H:%M:%S"), "  download diff"
     orig_diff_file = os.path.join(orig_diff_path, file_location)
     for ext in (".osc.gz", ".state.txt"):
       try:
@@ -276,7 +276,7 @@ def update(wanted_end_sequence=None):
       assert num_launched == 0
 
     # update osmbin
-    print time.strftime("%H:%M:%S"), "  update osmbin"
+    print time.strftime("%Y-%m-%d %H:%M:%S"), "  update osmbin"
     diff_read = OsmSax.OscSaxReader(orig_diff_file + ".osc.gz")
     o = OsmBin.OsmBin("/data/work/osmbin/data", "w")
     diff_read.CopyTo(o)
@@ -284,7 +284,7 @@ def update(wanted_end_sequence=None):
     del diff_read
 
     # update symbolic links to state.txt
-    print time.strftime("%H:%M:%S"), "  update links to state.txt"
+    print time.strftime("%Y-%m-%d %H:%M:%S"), "  update links to state.txt"
     update_symlink(orig_diff_file + ".state.txt", os.path.join(orig_diff_path, "state.txt"))
     os.utime(os.path.join(orig_diff_path, "state.txt"), (file_date, file_date))
     sys.stdout.flush()
