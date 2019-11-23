@@ -823,6 +823,12 @@ class OscFilterSaxWriter(OscSaxWriter):
             if not self.check_intersection(self.poly[poly_idx], data["bbox"]):
                 return False
 
+            # Big relations are included without any check
+            bbox = data["bbox"]
+            if ((float(bbox["maxlat"]) - float(bbox["minlat"])) > 90 and
+                (float(bbox["maxlon"]) - float(bbox["minlon"])) > 180):
+                return True
+
         if not data or len(data["member"]) == 0:
             if id in rec_rel:
                 print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
