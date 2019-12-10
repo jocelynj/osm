@@ -72,6 +72,7 @@ def read_multipolygon_wkt(f):
         polygon = read_polygon_wkt(f)
         if polygon != None and not skip_polygon:
             polygons.append(polygon)
+        skip_polygon = False
 
     wkt = "MULTIPOLYGON (" + ",".join(polygons) + ")"
     
