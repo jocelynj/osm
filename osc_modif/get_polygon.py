@@ -11,13 +11,12 @@ main_url = "http://polygons.openstreetmap.fr/"
 relation_generation_url = main_url + "index.py"
 polygon_union_url = main_url + "get_poly.py"
 
-for line in fileinput.input():
-  (country_name, polygon_id) = line.split()
+def generate_poly(country_name, polygon_id):
   print "  ", country_name, polygon_id
 
   out_file = os.path.join("generated-polygons", country_name + ".poly")
   if os.path.exists(out_file):
-    continue
+    return
 
   if "/" in country_name:
     dir_name = os.path.join("generated-polygons", os.path.dirname(country_name))
@@ -38,7 +37,7 @@ for line in fileinput.input():
     z = form.inputs["z"].value
   except:
     print "    * ERROR * "
-    continue
+    return
 
   if not ("%s-%s-%s" % (x, y, z)) in r.text:
     r = requests.post(relation_generation_url, params={"id": polygon_id}, data={"x": x, "y": y, "z": z})
@@ -50,3 +49,19 @@ for line in fileinput.input():
   with open(out_file, "w") as text_file:
     text_file.write(r.content)
 
+if __name__ == '__main__':
+
+  import argparse
+
+  parser = argparse.ArgumentParser(description="Initialise polygon files from %s" % main_url)
+  parser.add_argument("--file", dest="file", action="store",
+                      help="Get list of extracts to generate - format 'name rel_id' per line")
+  parser.add_argument("--region", dest="region", action="store", nargs="+",
+                      help="Get list of regin to generate - rel_id from osmose backend")
+  args = parser.parse_args()
+
+  if args.file:
+    with open(args.file) as f:
+      for line in f.readlines():
+        (country_name, polygon_id) = line.split()
+        generate_poly(country_name, polygon_id)
