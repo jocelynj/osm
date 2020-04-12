@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 
 import fileinput
 import lxml
@@ -12,7 +12,7 @@ relation_generation_url = main_url + "index.py"
 polygon_union_url = main_url + "get_poly.py"
 
 def generate_poly(country_name, polygon_id):
-  print "  ", country_name, polygon_id
+  print("  ", country_name, polygon_id)
 
   out_file = os.path.join("generated-polygons", country_name + ".poly")
   if os.path.exists(out_file):
@@ -28,7 +28,7 @@ def generate_poly(country_name, polygon_id):
   parser = lxml.html.HTMLParser(encoding='UTF-8')
   p = lxml.html.fromstring(r.text, parser=parser)
 
-  print relation_generation_url + "?id=" + str(polygon_id)
+  print(relation_generation_url + "?id=" + str(polygon_id))
 
   try:
     form = p.forms[1]
@@ -36,7 +36,7 @@ def generate_poly(country_name, polygon_id):
     y = form.inputs["y"].value
     z = form.inputs["z"].value
   except:
-    print "    * ERROR * "
+    print("    * ERROR * ")
     return
 
   if not ("%s-%s-%s" % (x, y, z)) in r.text:
@@ -46,7 +46,7 @@ def generate_poly(country_name, polygon_id):
                                               "params": "%s-%s-%s" % (x,y,z)})
 
   out_file = os.path.join("generated-polygons", country_name + ".poly")
-  with open(out_file, "w") as text_file:
+  with open(out_file, "wb") as text_file:
     text_file.write(r.content)
 
 if __name__ == '__main__':
