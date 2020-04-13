@@ -56,7 +56,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Initialise polygon files from %s" % main_url)
   parser.add_argument("--file", dest="file", action="store",
                       help="Get list of extracts to generate - format 'name rel_id' per line")
-  parser.add_argument("--region", dest="region", action="store", nargs="+",
+  parser.add_argument("--region", dest="regions", action="store", nargs="+",
                       help="Get list of regin to generate - rel_id from osmose backend")
   args = parser.parse_args()
 
@@ -65,3 +65,18 @@ if __name__ == '__main__':
       for line in f.readlines():
         (country_name, polygon_id) = line.split()
         generate_poly(country_name, polygon_id)
+
+  if args.regions:
+    sys.path.insert(0, os.path.join(os.path.expanduser("~"), "osmose-backend"))
+    import osmose_config
+    for region in args.regions:
+      for r in osmose_config.config.values():
+        if not "state.txt" in r.download:
+          continue
+        if not "download.openstreetmap.fr" in r.download["state.txt"]:
+          continue
+        if region in r.download["state.txt"]:
+          country_name = r.download["state.txt"].split("extracts/")[1].split(".state.txt")[0]
+          polygon_id = r.polygon_id
+          print(country_name)
+          generate_poly(country_name, polygon_id)
