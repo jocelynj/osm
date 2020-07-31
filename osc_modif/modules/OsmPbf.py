@@ -67,7 +67,7 @@ class OsmPbfReader:
             try:
                 self._output.NodeCreate(data)
             except:
-                print node, data
+                print coord, data
                 print traceback.format_exc()
                 self._got_error = True
       
