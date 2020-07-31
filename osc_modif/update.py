@@ -28,8 +28,6 @@ from modules import OsmBin
 from modules import OsmSax
 
 # configuration
-skip_diff_generation = False
-multiproc_enabled = True
 work_path = "/data/work/osmbin/replication"
 work_diffs_path = os.path.join(work_path, "diffs")
 type_replicate = "minute"
@@ -298,15 +296,34 @@ def update(wanted_end_sequence=None):
   lock.release()
 
 if __name__ == '__main__':
-  if len(sys.argv) > 1 and sys.argv[1]=="--list":
+  from optparse import OptionParser
+
+  parser = OptionParser()
+  parser.add_option("--list", action="store_true",
+                    help="List countries")
+  parser.add_option("--end", action="store",
+                    help="Stop generation at number <END> instead of latest from server")
+  parser.add_option("--no-multiproc", dest="multiproc", action="store_false", default=True,
+                    help="Disable running multiple processes in parallel")
+  parser.add_option("--skip-diff-generation", dest="skip_diff_generation", action="store_true",
+                    help="Only update database, without generating diffs")
+  (options, args) = parser.parse_args()
+
+
+  if options.list:
     import pprint
     pprint.pprint(sorted(top_countries))
     pprint.pprint(dependencies)
     sys.exit(0)
-  if len(sys.argv) > 1 and sys.argv[1]=="--end":
-    wanted_end_sequence = int(sys.argv[2])
+
+  if options.end:
+    wanted_end_sequence = int(options.end)
   else:
     wanted_end_sequence = None
+
+  multiproc_enabled = options.multiproc
+  skip_diff_generation = options.skip_diff_generation
+
   if multiproc_enabled:
     pool = multiprocessing.Pool(processes=8)
   lock_num_launched = multiprocessing.Lock()
