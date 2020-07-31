@@ -2,7 +2,7 @@
 
 ###########################################################################
 ##                                                                       ##
-## Copyrights Jocelyn Jaubert 2019                                       ##
+## Copyrights Frédéric Rodrigo 2017                                      ##
 ##                                                                       ##
 ## This program is free software: you can redistribute it and/or modify  ##
 ## it under the terms of the GNU General Public License as published by  ##
@@ -19,22 +19,50 @@
 ##                                                                       ##
 ###########################################################################
 
-from . import OsmPbf_libosmbf
-OsmPbfReader = OsmPbf_libosmbf.OsmPbfReader
-MockCountObjects = OsmPbf_libosmbf.MockCountObjects
+import dateutil.parser
+
+###########################################################################
+
+class dummylog:
+    def log(self, text):
+        return
+
+###########################################################################
+
+class OsmState:
+
+  def __init__(self, state_file, logger = dummylog()):
+    self._state_file = state_file
+    self._logger = logger
+    self._timestamp = None
+
+    with open(state_file, 'r') as f:
+      state_lines = f.readlines()
+      for line in state_lines:
+        logger.log("state: {0}".format(line))
+        if line.startswith("timestamp="):
+          s = line.replace('\\', '')
+          self._timestamp = dateutil.parser.parse(s[len("timestamp="):]).replace(tzinfo=None)
+
+
+  def timestamp(self):
+    return self._timestamp
 
 ###########################################################################
 import unittest
 
 class Test(unittest.TestCase):
-    def test_copy_all(self):
-        # basic test to verify connection to submodules
-        import dateutil
+  def test_state(self):
+    import datetime
 
-        i1 = OsmPbfReader("tests/saint_barthelemy.osm.pbf", state_file = "tests/saint_barthelemy.state.txt")
-        o1 = MockCountObjects()
-        i1.CopyTo(o1)
-        self.assertEqual(o1.num_nodes, 83)  # only nodes with tags are reported
-        self.assertEqual(o1.num_ways, 625)
-        self.assertEqual(o1.num_rels, 16)
-        self.assertEqual(i1.timestamp(), dateutil.parser.parse("2015-03-25T19:05:08Z").replace(tzinfo=None))
+    s = OsmState("tests/state1.txt")
+    exp = datetime.datetime(2010, 10, 29, 23, 0, 0, 0, None)
+    self.assertEqual(s.timestamp(), exp, "got=%s, exp=%s" % (s.timestamp(), exp))
+
+    s = OsmState("tests/state2.txt")
+    exp = datetime.datetime(2017, 9, 3, 16, 47, 2, 0, None)
+    self.assertEqual(s.timestamp(), exp, "got=%s, exp=%s" % (s.timestamp(), exp))
+
+    s = OsmState("tests/state3.txt")
+    exp = datetime.datetime(2017, 9, 2, 20, 43, 2, 0, None)
+    self.assertEqual(s.timestamp(), exp, "got=%s, exp=%s" % (s.timestamp(), exp))
