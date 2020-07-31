@@ -198,7 +198,8 @@ def update(wanted_end_sequence=None):
     begin_sequence = get_sequence_num(f)
     f.close()
   except IOError:
-    begin_sequence = 0
+    lock.release()
+    raise
 
   # get remote sequence number
   try:
