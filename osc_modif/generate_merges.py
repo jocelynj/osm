@@ -26,7 +26,7 @@ import subprocess
 import sys
 
 # configuration
-osmosis_bin = "/data/project/osmbin/osmosis-0.43.1/bin/osmosis"
+osmosis_bin = "/usr/bin/osmosis"
 work_path = "/data/work/osmbin/"
 work_diffs_path = os.path.join(work_path, "replication", "diffs")
 merge_diffs_path = os.path.join(work_diffs_path, "merge")

@@ -26,7 +26,7 @@ import shutil
 import subprocess
 
 # configuration
-osmosis_bin = "/data/project/osmbin/osmosis-0.43.1/bin/osmosis"
+osmosis_bin = "/usr/bin/osmosis"
 osmium_bin = "/usr/bin/osmium"
 osmium_config_file = "/tmp/osmium_config"
 work_path = "/data/work/osmbin/"

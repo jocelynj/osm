@@ -2,7 +2,7 @@
 
 POLY=$1
 WORKDIR=/data/work/osmbin/extracts/$POLY
-OSMOSIS=/data/project/osmbin/osmosis-0.43.1/bin/osmosis
+OSMOSIS=/usr/bin/osmosis
 
 CURDATE="`date +%F-%R`"
 
