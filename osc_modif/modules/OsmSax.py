@@ -19,10 +19,10 @@
 ##                                                                       ##
 ###########################################################################
 
-import re, commands, sys, os, time, bz2, xml, gzip, cStringIO
+import re, sys, os, time, bz2, xml, gzip, io
 from xml.sax import make_parser, handler
 from xml.sax.saxutils import XMLGenerator, quoteattr
-from OrderedDict import OrderedDict
+from collections import OrderedDict
 
 ###########################################################################
 
@@ -45,10 +45,10 @@ class dummyout:
         self._r += 1
         return
     def __del__(self):
-        print self._n, self._w, self._r
+        print(self._n, self._w, self._r)
 
 def GetFile(f, mode="r"):
-    if type(f) == file:
+    if isinstance(f, io.IOBase):
         return f
     elif f.endswith(".bz2"):
         return bz2.BZ2File(f, mode)
@@ -125,7 +125,7 @@ class OsmSaxReader(handler.ContentHandler):
             try:
                 self._output.NodeCreate(self._data)
             except:
-                print self._data
+                print(self._data)
                 raise
         elif name == u"way":
             self._data[u"tag"] = self._tags
@@ -133,7 +133,7 @@ class OsmSaxReader(handler.ContentHandler):
             try:
                 self._output.WayCreate(self._data)
             except:
-                print self._data
+                print(self._data)
                 raise
         elif name == u"relation":
             self._data[u"tag"]    = self._tags
@@ -141,7 +141,7 @@ class OsmSaxReader(handler.ContentHandler):
             try:
                 self._output.RelationCreate(self._data)
             except:
-                print self._data
+                print(self._data)
                 raise
 
 ###########################################################################
@@ -404,7 +404,7 @@ class OsmSaxWriter(XMLGenerator):
         self.endElement("relation")
       
 def NodeToXml(data, full = False):
-    o = cStringIO.StringIO()
+    o = io.StringIO()
     w = OsmSaxWriter(o, "UTF-8")
     if full:
         w.startDocument()
@@ -416,7 +416,7 @@ def NodeToXml(data, full = False):
     return o.getvalue()
 
 def WayToXml(data, full = False):
-    o = cStringIO.StringIO()
+    o = io.StringIO()
     w = OsmSaxWriter(o, "UTF-8")
     if full:
         w.startDocument()
@@ -428,7 +428,7 @@ def WayToXml(data, full = False):
     return o.getvalue()
 
 def RelationToXml(data, full = False):
-    o = cStringIO.StringIO()
+    o = io.StringIO()
     w = OsmSaxWriter(o, "UTF-8")
     if full:
         w.startDocument()
@@ -484,7 +484,7 @@ class OscSaxWriter(XMLGenerator):
                 if way_info:
                     self.WayUpdate(way_info)
             t2 = time.time()
-            print "new ways took:", t2 - t1, "for", len(ways_to_add)
+            print("new ways took:", t2 - t1, "for", len(ways_to_add))
     
             # add nodes that were not modified, but included by ways or relations
             t1 = time.time()
@@ -494,7 +494,7 @@ class OscSaxWriter(XMLGenerator):
                 if node_info:
                     self.NodeUpdate(node_info)
             t2 = time.time()
-            print "new nodes took:", t2 - t1, "for", len(nodes_to_add)
+            print("new nodes took:", t2 - t1, "for", len(nodes_to_add))
 
         self.endElement("osmChange")
 
@@ -601,7 +601,7 @@ class OscPositionSaxWriter(OscSaxWriter):
             if way_info:
                 self.WayNew(way_info, "")
         t2 = time.time()
-        print "new ways took:", t2 - t1, "for", len(ways_to_add)
+        print("new ways took:", t2 - t1, "for", len(ways_to_add))
 
         # add nodes that were not modified, but included by ways or relations
         t1 = time.time()
@@ -611,7 +611,7 @@ class OscPositionSaxWriter(OscSaxWriter):
             if node_info:
                 self.NodeNew(node_info, "")
         t2 = time.time()
-        print "new nodes took:", t2 - t1, "for", len(nodes_to_add)
+        print("new nodes took:", t2 - t1, "for", len(nodes_to_add))
         self.endElement("osmChange")
 
 
@@ -664,7 +664,7 @@ class OscFilterSaxWriter(OscSaxWriter):
         self.nodes_added_in_poly = []
         self.ways_added_in_poly = []
         self.rels_added_in_poly = []
-        for i in xrange(self.poly_num):
+        for i in range(self.poly_num):
             self.nodes_added_in_poly.append(set())
             self.ways_added_in_poly.append(set())
             self.rels_added_in_poly.append(set())
@@ -677,12 +677,12 @@ class OscFilterSaxWriter(OscSaxWriter):
             self.endElement(self._prev_action)
         self.endElement("osmChange")
 
-        print "read %d nodes, %d ways, %d relations" % (self.num_read_nodes, self.num_read_ways, self.num_read_relations)
+        print("read %d nodes, %d ways, %d relations" % (self.num_read_nodes, self.num_read_ways, self.num_read_relations))
 
 
     def NodeNew(self, data, action):
         if not data:
-            print "NodeNew - no data found..."
+            print("NodeNew - no data found...")
             return
 
         if self.NodeWithinPoly(1, data["id"], data):
@@ -725,7 +725,7 @@ class OscFilterSaxWriter(OscSaxWriter):
 
     def WayNew(self, data, action):
         if not data:
-            print "WayNew - no data found..."
+            print("WayNew - no data found...")
             return
 
         if self.WayWithinPoly(1, data["id"], data):
@@ -779,7 +779,7 @@ class OscFilterSaxWriter(OscSaxWriter):
 
     def RelationNew(self, data, action):
         if not data:
-            print "RelationNew - no data found..."
+            print("RelationNew - no data found...")
             return
 
         bbox_data = {}
@@ -831,7 +831,7 @@ class OscFilterSaxWriter(OscSaxWriter):
 
         if not data or len(data["member"]) == 0:
             if id in rec_rel:
-                print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
+                print("recursion on id=%d - rec_rel=%s" % (id, str(rec_rel)))
                 return False
             if id in self.rels_added_in_poly[poly_idx]:
                 return True
@@ -878,7 +878,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
             self.endElement(self._prev_action)
         self.endElement("osmChange")
 
-        print "read %d nodes, %d ways, %d relations" % (self.num_read_nodes, self.num_read_ways, self.num_read_relations)
+        print("read %d nodes, %d ways, %d relations" % (self.num_read_nodes, self.num_read_ways, self.num_read_relations))
 
     def concat_bbox(self, bbox1, bbox2):
         if bbox1 == None:
@@ -913,7 +913,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
 
     def NodeNew(self, data, action):
         if not data:
-            print "NodeNew - no data found..."
+            print("NodeNew - no data found...")
             return
 
         bbox = self.NodeBBox(data["id"], data, action=action)
@@ -946,19 +946,19 @@ class OscBBoxSaxWriter(OscSaxWriter):
         self.num_read_nodes += 1
         if not data:
             if not bbox:
-                print "node %d is empty" % id
+                print("node %d is empty" % id)
             self.nodes_modified[id] = bbox
             return bbox
 
         bbox = self.expand_bbox(bbox, data["lat"], data["lon"])
         self.nodes_modified[id] = bbox
         if bbox[0] == -180 and bbox[1] == -180:
-            print "error on node %d" % id
+            print("error on node %d" % id)
         return bbox
 
     def WayNew(self, data, action):
         if not data:
-            print "WayNew - no data found..."
+            print("WayNew - no data found...")
             return
 
         bbox = self.WayBBox(data["id"], data, action)
@@ -972,7 +972,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
 
         self.startElement("way", _formatData(data))
         if bbox == None:
-            print "way %d is empty" % data["id"]
+            print("way %d is empty" % data["id"])
         else:
             self.dump_element_bbox(bbox)
         for (k, v) in data[u"tag"].items():
@@ -1005,7 +1005,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
 
     def RelationNew(self, data, action):
         if not data:
-            print "RelationNew - no data found..."
+            print("RelationNew - no data found...")
             return
 
         bbox = self.RelationBBox(data["id"], data, action)
@@ -1018,7 +1018,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
 
         self.startElement("relation", _formatData(data))
         if bbox == None:
-            print "relation %d is empty" % data["id"]
+            print("relation %d is empty" % data["id"])
         else:
             self.dump_element_bbox(bbox)
         for (k, v) in data[u"tag"].items():
@@ -1030,7 +1030,7 @@ class OscBBoxSaxWriter(OscSaxWriter):
 
     def RelationBBox(self, id, data = None, action = None, rec_rel = []):
         if id in rec_rel:
-            print "recursion on id=%d - rec_rel=%s" % (id, str(rec_rel))
+            print("recursion on id=%d - rec_rel=%s" % (id, str(rec_rel)))
             return None
         if id in self.rels_modified:
             return self.rels_modified[id]
@@ -1064,10 +1064,10 @@ class OscBBoxSaxWriter(OscSaxWriter):
                 bbox = self.concat_bbox(bbox, self.RelationBBox(ref, rec_rel=rec_rel + [id]))
         self.rels_modified[id] = bbox
         if len(data[u"member"]) == 0:
-            print "relation %d is empty [bbox=%s]" % (id, bbox)
+            print("relation %d is empty [bbox=%s]" % (id, bbox))
         elif bbox == None or (bbox[0] == -180 and bbox[1] == -180):
-            print "potential error on relation %d" % id
-            print bbox
+            print("potential error on relation %d" % id)
+            print(bbox)
             import pprint
             pprint.pprint(data)
             bbox = self.expand_bbox(bbox, -89, -189)
