@@ -19,152 +19,109 @@
 ##                                                                       ##
 ###########################################################################
 
-from pyPgSQL import PgSQL, libpq
+import psycopg2
+import psycopg2.extensions
+import psycopg2.extras
+import time
 
 ###########################################################################
 ## Reader / Writer
 
 class OsmOsis:
-    
-    def __init__(self, dbstring, schema):
-        self._PgConn = PgSQL.Connection(dbstring)
+
+    def __init__(self, dbstring, schema_path=None):
+        psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+        psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+        retry = 10 * 60
+        self._PgConn = None
+        while not self._PgConn and retry > 0:
+            try:
+                self._PgConn = psycopg2.connect(dbstring)
+            except psycopg2.OperationalError:
+                retry = retry - 1
+                if retry == 0:
+                    raise
+                else:
+                    if retry % 10 == 0:
+                        print('DB connection fails, retry...')
+                    time.sleep(1)
+        psycopg2.extras.register_hstore(self._PgConn)
         self._PgCurs = self._PgConn.cursor()
-        self._PgCurs.execute("SET search_path TO %s,public;" % schema)
-        
-    #def __del__(self):
-    #    self._PgConn.commit()
-        
+        if schema_path:
+            self._PgCurs.execute("SET search_path TO %s,public;" % schema_path)
+
+    def __del__(self):
+        try:
+            self.close()
+        except (AttributeError, psycopg2.InterfaceError):
+            # psycopg2.InterfaceError can happen if connection was already closed
+            pass
+
+
+    def conn(self):
+        return self._PgConn
+
+
+    def close(self):
+        self._PgCurs.close()
+        self._PgConn.close()
+
+
+    def timestamp(self):
+        self._PgCurs.execute('SELECT tstamp FROM metainfo')
+        (timestamp,) = self._PgCurs.fetchone()
+        return timestamp
+
+
     def NodeGet(self, NodeId):
-        
-        self._PgCurs.execute("SELECT nodes.id, st_y(nodes.geom), st_x(nodes.geom), nodes.version, nodes.tstamp, users.name FROM nodes INNER JOIN users ON nodes.user_id = users.id WHERE nodes.id = %d;" % NodeId)
+        self._PgCurs.execute("SELECT nodes.id, st_y(nodes.geom), st_x(nodes.geom), nodes.version, users.name, nodes.tags FROM nodes LEFT JOIN users ON nodes.user_id = users.id WHERE nodes.id = %d;" % NodeId)
         r1 = self._PgCurs.fetchone()
         if not r1: return None
-        data = {}
-        data[u"id"]      = r1[0]
-        data[u"lat"]     = float(r1[1])
-        data[u"lon"]     = float(r1[2])
-        data[u"version"] = r1[3]
-        data[u"timestamp"] = str(r1[4])
-        data[u"user"]    = r1[5].decode("utf8")
-        
-        data[u"tag"] = {}
-        self._PgCurs.execute("SELECT (each(tags)).key, (each(tags)).value FROM nodes WHERE id = %d;" % NodeId)
-        for r1 in self._PgCurs.fetchall():
-            data[u"tag"][r1[0].decode("utf8")] = r1[1].decode("utf8")
-            
-        return data
-    
-    def WayGet(self, WayId):
-        
-        self._PgCurs.execute("SELECT ways.id, ways.version, ways.tstamp, users.name FROM ways INNER JOIN users ON ways.user_id = users.id WHERE ways.id = %d;" % WayId)
+        return {
+            u"id": r1[0],
+            u"lat": float(r1[1]),
+            u"lon": float(r1[2]),
+            u"version": r1[3],
+            u"user": r1[4] or "",
+            u"tag": r1[5],
+        }
+
+
+    def WayGet(self, WayId, dump_sub_elements=False):
+        self._PgCurs.execute("SELECT ways.id, ways.version, users.name, ways.tags, ways.nodes FROM ways LEFT JOIN users ON ways.user_id = users.id WHERE ways.id = %d;" % WayId)
         r1 = self._PgCurs.fetchone()
         if not r1: return None
-        data = {}
-        data[u"id"]      = r1[0]
-        data[u"version"] = r1[1]
-        data[u"timestamp"] = str(r1[2])
-        data[u"user"]    = r1[3].decode("utf8")
-        
-        data[u"tag"] = {}
-        self._PgCurs.execute("SELECT (each(tags)).key, (each(tags)).value FROM ways WHERE id = %d;" % WayId)
-        for r1 in self._PgCurs.fetchall():
-            data[u"tag"][r1[0].decode("utf8")] = r1[1].decode("utf8")
-        
-        data[u"nd"] = []
-        self._PgCurs.execute("SELECT node_id FROM way_nodes WHERE way_id = %d ORDER BY sequence_id;" % WayId)
-        for r1 in self._PgCurs.fetchall():
-            data[u"nd"].append(r1[0])
-            
-        return data
+        return {
+            u"id": r1[0],
+            u"version": r1[1],
+            u"user": r1[2] or "",
+            u"tag": r1[3],
+            u"nd": r1[4] if dump_sub_elements else [],
+        }
 
-    def RelationGet(self, RelationId):
-        
-        self._PgCurs.execute("SELECT relations.id, relations.version, relations.tstamp, users.name FROM relations INNER JOIN users ON relations.user_id = users.id WHERE relations.id = %d;" % RelationId)
+
+    def RelationGet(self, RelationId, dump_sub_elements=False):
+        self._PgCurs.execute("SELECT relations.id, relations.version, users.name, relations.tags FROM relations LEFT JOIN users ON relations.user_id = users.id WHERE relations.id = %d;" % RelationId)
         r1 = self._PgCurs.fetchone()
         if not r1: return None
-        data = {}
-        data[u"id"]      = r1[0]
-        data[u"version"] = r1[1]
-        data[u"timestamp"] = str(r1[2])
-        data[u"user"]    = r1[3].decode("utf8")
-        
-        data[u"tag"] = {}
-        self._PgCurs.execute("SELECT (each(tags)).key, (each(tags)).value FROM relations WHERE id = %d;" % RelationId)
-        for r1 in self._PgCurs.fetchall():
-            data[u"tag"][r1[0].decode("utf8")] = r1[1].decode("utf8")
-        
-        data[u"member"] = []
-        self._PgCurs.execute("SELECT member_id, member_type, member_role FROM relation_members WHERE relation_id = %d ORDER BY sequence_id;" % RelationId)
-        for r1 in self._PgCurs.fetchall():
-            data[u"member"].append({u"ref":r1[0], u"type":{"N":"node","W":"way","R":"relation"}[r1[1]], u"role":r1[2].decode("utf8")})
-            
+        data = {
+            u"id": r1[0],
+            u"version": r1[1],
+            u"user": r1[2] or "",
+            u"tag": r1[3],
+            u"member": [],
+        }
+
+        if dump_sub_elements:
+            self._PgCurs.execute("SELECT member_id, member_type, member_role FROM relation_members WHERE relation_id = %d ORDER BY sequence_id;" % RelationId)
+            for r1 in self._PgCurs.fetchall():
+                data[u"member"].append({u"ref":r1[0], u"type":{"N":"node","W":"way","R":"relation"}[r1[1]], u"role":r1[2]})
+
         return data
 
-    def NodeGetPosition(self, NodeId):
-        
-        self._PgCurs.execute("SELECT nodes.id, st_y(nodes.geom), st_x(nodes.geom), nodes.version, nodes.tstamp FROM nodes WHERE nodes.id = %d;" % NodeId)
+
+    def UserGet(self, UserId):
+        self._PgCurs.execute("SELECT name FROM users WHERE id = %d;" % UserId)
         r1 = self._PgCurs.fetchone()
         if not r1: return None
-        data = {}
-        data[u"id"]  = r1[0]
-        data[u"lat"] = float(r1[1])
-        data[u"lon"] = float(r1[2])
-        data[u"version"]   = r1[3]
-        data[u"timestamp"] = str(r1[4])
-        data[u"tag"] = {}
-            
-        return data
-
-    def WayGetNodes(self, WayId):
-        
-        self._PgCurs.execute("SELECT ways.id FROM ways WHERE ways.id = %d;" % WayId)
-        r1 = self._PgCurs.fetchone()
-        if not r1: return None
-        data = {}
-        data[u"id"]  = r1[0]
-        data[u"tag"] = {}
-        data[u"nd"]  = []
-        self._PgCurs.execute("SELECT node_id FROM way_nodes WHERE way_id = %d ORDER BY sequence_id;" % WayId)
-        for r1 in self._PgCurs.fetchall():
-            data[u"nd"].append(r1[0])
-            
-        return data
-
-    def RelationGetMembers(self, RelationId):
-        
-        self._PgCurs.execute("SELECT relations.id FROM relations WHERE relations.id = %d;" % RelationId)
-        r1 = self._PgCurs.fetchone()
-        if not r1: return None
-        data = {}
-        data[u"id"]  = r1[0]
-        data[u"tag"] = {}
-        data[u"member"] = []
-        self._PgCurs.execute("SELECT member_id, member_type, member_role FROM relation_members WHERE relation_id = %d ORDER BY sequence_id;" % RelationId)
-        for r1 in self._PgCurs.fetchall():
-            data[u"member"].append({u"ref":r1[0], u"type":{"N":"node","W":"way","R":"relation"}[r1[1]], u"role":r1[2].decode("utf8")})
-            
-        return data
-
-    def NodeExists(self, NodeId):
-        
-        self._PgCurs.execute("SELECT nodes.id FROM nodes WHERE nodes.id = %d;" % NodeId)
-        r1 = self._PgCurs.fetchone()
-        if not r1:
-            return None
-        return True
-
-    def WayExists(self, WayId):
-        
-        self._PgCurs.execute("SELECT ways.id FROM ways WHERE ways.id = %d;" % WayId)
-        r1 = self._PgCurs.fetchone()
-        if not r1:
-            return None
-        return True
-
-    def RelationExists(self, RelationId):
-        
-        self._PgCurs.execute("SELECT relations.id FROM relations WHERE relations.id = %d;" % RelationId)
-        r1 = self._PgCurs.fetchone()
-        if not r1:
-            return None
-        return True
+        return r1[0]
