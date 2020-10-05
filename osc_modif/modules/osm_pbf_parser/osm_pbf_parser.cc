@@ -74,9 +74,7 @@ struct Visitor
   }
 
   void node_callback(uint64_t osmid, double lon, double lat, const Tags & tags) const {
-      if (!tags.empty()) { // TODO Move this check earlier
-          call_method<void>(self, "node", osmid, lon, lat, tagsToDict(tags));
-      }
+      call_method<void>(self, "node", osmid, lon, lat, tagsToDict(tags));
   }
 
   void way_callback(uint64_t osmid, const Tags & tags, const std::vector<uint64_t> & refs) const {
