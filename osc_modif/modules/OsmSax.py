@@ -64,7 +64,7 @@ class OsmSaxReader(handler.ContentHandler):
     def log(self, txt):
         self._logger.log(txt)
     
-    def __init__(self, filename, logger = dummylog()):
+    def __init__(self, filename, logger = dummylog(), state_file = None):
         self._filename = filename
         self._logger   = logger
         
