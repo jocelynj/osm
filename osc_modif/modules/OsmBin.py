@@ -475,8 +475,7 @@ class MockCountObjects:
 class Test(unittest.TestCase):
     def setUp(self):
         import shutil
-        from modules import config
-        self.test_dir = config.dir_tmp + "/tests/osmbin/"
+        self.test_dir = "tmp/osmbin/"
         shutil.rmtree(self.test_dir, True)
         InitFolder(self.test_dir)
         self.a = OsmBin(self.test_dir, "w")

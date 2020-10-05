@@ -20,7 +20,6 @@
 ###########################################################################
 
 import dateutil.parser
-from . import config
 from .osm_pbf_parser import osm_pbf_parser
 from .OsmState import OsmState
 import subprocess
@@ -28,6 +27,8 @@ from .OsmReader import OsmReader, dummylog
 
 
 class OsmPbfReader(OsmReader, osm_pbf_parser.Visitor):
+
+    bin_osmconvert = "/usr/bin/osmconvert"
 
     def log(self, txt):
         self._logger.log(txt)
@@ -50,7 +51,7 @@ class OsmPbfReader(OsmReader, osm_pbf_parser.Visitor):
         else:
             try:
                 # Try to get timestamp from metadata
-                res = subprocess.check_output([config.bin_osmconvert, self._pbf_file, '--out-timestamp']).decode('utf-8')
+                res = subprocess.check_output([self.bin_osmconvert, self._pbf_file, '--out-timestamp']).decode('utf-8')
                 d = dateutil.parser.parse(res).replace(tzinfo=None)
                 if not d:
                     raise ValueError()
@@ -60,7 +61,7 @@ class OsmPbfReader(OsmReader, osm_pbf_parser.Visitor):
 
             try:
                 # Compute max timestamp from data
-                res = subprocess.check_output('{} {} --out-statistics | grep "timestamp max"'.format(config.bin_osmconvert, self._pbf_file), shell=True).decode('utf-8')
+                res = subprocess.check_output('{} {} --out-statistics | grep "timestamp max"'.format(self.bin_osmconvert, self._pbf_file), shell=True).decode('utf-8')
                 s = res.split(' ')[2]
                 return dateutil.parser.parse(s).replace(tzinfo=None)
 
