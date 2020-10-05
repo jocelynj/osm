@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 #-*- coding: utf-8 -*-
 
 ###########################################################################
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     geom = read_multipolygon(f)
     f.close()
 
-    print geom.area
+    print(geom.area)
 
-    print check_intersection(geom, 1, 1)
-    print check_intersection(geom, 48, 2)
+    print(check_intersection(geom, (1, 1)))
+    print(check_intersection(geom, (48, 2)))
