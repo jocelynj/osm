@@ -414,46 +414,6 @@ class OsmBin:
             i = OsmSax.OscSaxReader(f)
         i.CopyTo(self)
 
-
-###########################################################################
-
-if __name__ == "__main__":
-    if sys.argv[1] == "--init":
-        InitFolder(sys.argv[2])
-
-    if sys.argv[1] == "--import":
-        o = OsmBin(sys.argv[2], "w")
-        o.Import(sys.argv[3])
-
-    if sys.argv[1] == "--update":
-        o = OsmBin(sys.argv[2], "w")
-        o.Update(sys.argv[3])
-
-    if sys.argv[1] == "--read":
-        i = OsmBin(sys.argv[2])
-        if sys.argv[3] == "node":
-            print(i.NodeGet(int(sys.argv[4])))
-        if sys.argv[3] == "way":
-            print(i.WayGet(int(sys.argv[4])))
-        if sys.argv[3] == "relation":
-            print(i.RelationGet(int(sys.argv[4])))
-        if sys.argv[3] == "relation_full":
-            import pprint
-            pprint.pprint(i.RelationFullRecur(int(sys.argv[4])))
-
-    if sys.argv[1] == "--pyro":
-        import Pyro.core
-        import Pyro.naming
-        class OsmBin2(Pyro.core.ObjBase, OsmBin):
-            def __init__(self, folder):
-                Pyro.core.ObjBase.__init__(self)
-                OsmBin.__init__(self, folder)
-        daemon = Pyro.core.Daemon()
-        #ns = Pyro.naming.NameServerLocator().getNS()
-        #daemon.useNameServer(ns)
-        uri = daemon.connect(OsmBin2("/data/work/osmbin/data/"), "OsmBin")
-        daemon.requestLoop()
-
 ###########################################################################
 import unittest
 
