@@ -1,0 +1,6 @@
+# The URL of the directory containing change files.
+baseUrl=file:///data/work/osmbin/replication/diffs/planet/minute
+
+# Defines the maximum time interval in seconds to download in a single invocation.
+# Setting to 0 disables this feature.
+maxInterval=2592000
