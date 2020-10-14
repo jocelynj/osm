@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
 ###########################################################################
@@ -40,7 +40,7 @@ planet_file = os.path.join(work_pbfs_path, "planet-latest.osm.pbf")
 
 def init_pbf(dirpath, filenames, options):
   cmd = [osmosis_bin]
-  print dirpath
+  print(dirpath)
   if dirpath == ".":
     orig_pbf = planet_file
   else:
@@ -48,7 +48,7 @@ def init_pbf(dirpath, filenames, options):
     if not os.path.isfile(orig_pbf):
       up = os.path.dirname(os.path.dirname(orig_pbf))
       orig_pbf = os.path.join(up, os.path.basename(up) + ".osm.pbf")
-      print orig_pbf
+      print(orig_pbf)
   need_launch = False
   country_dir = {}
   pwd = os.getcwd()
@@ -66,7 +66,7 @@ def init_pbf(dirpath, filenames, options):
 
     if options.country and f.split(".")[0] not in options.country:
       continue
-    print f
+    print(f)
     need_launch = True
     dst_poly = os.path.join(pwd, dirpath, f)
     dst_pbf = os.path.join(country_dir[f], ".".join(f.split(".")[:-1]) + ".osm.tmp.pbf")
@@ -95,7 +95,7 @@ def init_pbf(dirpath, filenames, options):
     return
 
   # Create configuration.txt
-  orig_configuration = os.path.join(os.path.dirname(planet_file), "configuration.txt")
+  orig_configuration = "../configuration-planet.txt"
   orig_lines = []
   with open(orig_configuration, "r") as src_f:
     for l in src_f:
@@ -121,19 +121,19 @@ def init_pbf(dirpath, filenames, options):
         if run == num_runs-1:
           last = len(osmium_config_list)
 
-        print "  run %d with %d countries" % (run, last-first)
+        print("  run %d with %d countries" % (run, last-first))
         osmium_config = "".join(osmium_config_list[first:last])
         with open(osmium_config_file, "w") as f:
           f.write(osmium_config_begin)
           f.write(osmium_config)
           f.write(osmium_config_end)
-        print osmium_cmd
+        print(osmium_cmd)
         subprocess.check_call(osmium_cmd)
 
         first = last
         last += len(osmium_config_list) // num_runs
     else:
-      print cmd
+      print(cmd)
       subprocess.check_call(cmd)
 
   for f in filenames:
@@ -183,6 +183,6 @@ if __name__ == '__main__':
       region = r[2:]
 
     if args.list_region:
-      print region
+      print(region)
     elif not args.region or region in args.region:
       init_pbf(r, files, args)

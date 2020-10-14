@@ -5,30 +5,30 @@
 </create>
 <modify>
 <node id="91" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5251304" lon="12.4849185">
+<tag k="change" v="yes"/>
 <tag k="from" v="polygon"/>
 <tag k="new_tag" v="1"/>
-<tag k="change" v="yes"/>
 <tag k="to" v="polygon"/>
 </node>
 </modify>
 <delete>
 <node id="92" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="17.8391494" lon="7.0242802">
-<tag k="to" v="outside"/>
-<tag k="from" v="polygon"/>
 <tag k="change" v="yes"/>
+<tag k="from" v="polygon"/>
+<tag k="to" v="outside"/>
 </node>
 </delete>
 <modify>
 <node id="95" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3712954" lon="12.4949323">
-<tag k="to" v="polygon"/>
-<tag k="from" v="polygon"/>
 <tag k="change" v="yes"/>
+<tag k="from" v="polygon"/>
+<tag k="to" v="polygon"/>
 </node>
 </modify>
 <create>
 <node id="141" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.5320015" lon="12.6433156">
-<tag k="to" v="polygon"/>
 <tag k="change" v="yes"/>
+<tag k="to" v="polygon"/>
 </node>
 <node id="148" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4361298" lon="12.5924733"/>
 <node id="150" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.4088902" lon="12.6385305"/>
@@ -38,9 +38,9 @@
 </create>
 <modify>
 <node id="175" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto" lat="18.3642551" lon="12.3134039">
-<tag k="to" v="polygon"/>
-<tag k="from" v="outside"/>
 <tag k="change" v="yes"/>
+<tag k="from" v="outside"/>
+<tag k="to" v="polygon"/>
 </node>
 </modify>
 <delete>
@@ -69,9 +69,9 @@
 </modify>
 <create>
 <way id="149" version="1" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.9490293" maxlon="12.7232708" minlon="6.8257236" maxlat="18.4825195"/>
-<tag k="to" v="polygon"/>
+<bbox minlat="17.9490293" minlon="6.8257236" maxlat="18.482519500000002" maxlon="12.7232708"/>
 <tag k="change" v="yes"/>
+<tag k="to" v="polygon"/>
 <nd ref="147"/>
 <nd ref="148"/>
 <nd ref="150"/>
@@ -82,10 +82,10 @@
 </create>
 <modify>
 <way id="243" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="18.3815686" maxlon="12.5050424" minlon="12.4309495" maxlat="18.4793218"/>
+<bbox minlat="18.381568599999998" minlon="12.4309495" maxlat="18.4793218" maxlon="12.505042399999999"/>
+<tag k="change" v="yes"/>
 <tag k="from" v="polygon"/>
 <tag k="new_tag" v="1"/>
-<tag k="change" v="yes"/>
 <tag k="to" v="polygon"/>
 <nd ref="241"/>
 <nd ref="242"/>
@@ -95,10 +95,10 @@
 <nd ref="250"/>
 </way>
 <way id="354" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.687031" maxlon="12.3932984" minlon="7.0053663" maxlat="18.3459367"/>
-<tag k="to" v="polygon"/>
-<tag k="from" v="polygon"/>
+<bbox minlat="17.687030999999998" minlon="7.0053662999999995" maxlat="18.345936700000003" maxlon="12.393298399999999"/>
 <tag k="change" v="yes"/>
+<tag k="from" v="polygon"/>
+<tag k="to" v="polygon"/>
 <nd ref="352"/>
 <nd ref="4"/>
 <nd ref="353"/>
@@ -110,10 +110,10 @@
 <nd ref="363"/>
 </way>
 <way id="495" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.8091318" maxlon="12.6591442" minlon="6.8919658" maxlat="18.3448192"/>
-<tag k="to" v="polygon"/>
-<tag k="from" v="outside"/>
+<bbox minlat="17.8091318" minlon="6.8919657999999995" maxlat="18.3448192" maxlon="12.6591442"/>
 <tag k="change" v="yes"/>
+<tag k="from" v="outside"/>
+<tag k="to" v="polygon"/>
 <nd ref="493"/>
 <nd ref="494"/>
 <nd ref="496"/>
@@ -122,10 +122,10 @@
 <nd ref="502"/>
 </way>
 <way id="606" version="2" timestamp="2014-03-31T22:00:00Z" uid="10" user="toto">
-<bbox minlat="17.7283918" maxlon="12.5484109" minlon="7.029573" maxlat="18.3623973"/>
-<tag k="to" v="polygon"/>
-<tag k="from" v="polygon"/>
+<bbox minlat="17.728391799999997" minlon="7.029573" maxlat="18.3623973" maxlon="12.548410899999999"/>
 <tag k="change" v="yes"/>
+<tag k="from" v="polygon"/>
+<tag k="to" v="polygon"/>
 <nd ref="604"/>
 <nd ref="111"/>
 <nd ref="605"/>

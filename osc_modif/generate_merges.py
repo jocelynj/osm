@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
 ###########################################################################
@@ -44,13 +44,13 @@ def update_hardlink(src, dst):
 
 def update_symlink(src, dst):
   if os.path.exists(dst) and not os.path.islink(dst):
-    raise Exception, "File '%s' is not a symbolic link" % dst
+    raise Exception("File '%s' is not a symbolic link" % dst)
   if os.path.exists(dst):
     os.remove(dst)
   try:
     os.symlink(src, dst)
   except:
-    print "FAIL on update_symlink(%s, %s)" % (src, dst)
+    print("FAIL on update_symlink(%s, %s)" % (src, dst))
     raise
 
 # get local sequence number
@@ -79,25 +79,25 @@ def merge(filename):
     begin_sequence = 0
   
   # get last sequence number
-  end_sequence = sys.maxint
+  end_sequence = sys.maxsize
   for d in diff_list:
     f = open(os.path.join(work_diffs_path, d, type_replicate, "state.txt"))
     end_sequence = min(end_sequence, get_sequence_num(f))
     f.close()
 
-  if end_sequence == sys.maxint:
+  if end_sequence == sys.maxsize:
     return
 
   if begin_sequence == 0:
     begin_sequence = end_sequence - 2
 
-  for i in xrange(begin_sequence + 1, end_sequence + 1):
+  for i in range(begin_sequence + 1, end_sequence + 1):
     num = "%03d/%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000, i % 1000)
     merge_num(filename, diff_list, num)
 
 
 def merge_num(dest, diff_list, num):
-  print num
+  print(num)
   cmd = [osmosis_bin]
   for (n, d) in enumerate(diff_list):
     cmd += ["--read-xml-change", os.path.join(work_diffs_path, d, type_replicate, num) + ".osc.gz"]
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     for f in files:
       if countries and f not in countries:
         continue
-      print f
+      print(f)
       if pbf:
         merge_pbf(os.path.join(r, f))
       else:

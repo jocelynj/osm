@@ -2,7 +2,7 @@
 
 ###########################################################################
 ##                                                                       ##
-## Copyrights Jocelyn Jaubert 2019                                       ##
+## Copyrights Frédéric Rodrigo 2019                                      ##
 ##                                                                       ##
 ## This program is free software: you can redistribute it and/or modify  ##
 ## it under the terms of the GNU General Public License as published by  ##
@@ -19,22 +19,19 @@
 ##                                                                       ##
 ###########################################################################
 
-from . import OsmPbf_libosmbf
-OsmPbfReader = OsmPbf_libosmbf.OsmPbfReader
-MockCountObjects = OsmPbf_libosmbf.MockCountObjects
+import sys
+import osm_pbf_parser
 
-###########################################################################
-import unittest
+class V(osm_pbf_parser.Visitor):
+    def node(self, osmid, lon, lat, tags):
+        print('node', osmid, tags)
 
-class Test(unittest.TestCase):
-    def test_copy_all(self):
-        # basic test to verify connection to submodules
-        import dateutil
+    def way(self, osmid, tags, refs):
+        print('way', osmid, tags, refs)
 
-        i1 = OsmPbfReader("tests/saint_barthelemy.osm.pbf", state_file = "tests/saint_barthelemy.state.txt")
-        o1 = MockCountObjects()
-        i1.CopyTo(o1)
-        self.assertEqual(o1.num_nodes, 8076)
-        self.assertEqual(o1.num_ways, 625)
-        self.assertEqual(o1.num_rels, 16)
-        self.assertEqual(i1.timestamp(), dateutil.parser.parse("2015-03-25T19:05:08Z").replace(tzinfo=None))
+    def relation(self, osmid, tags, ref):
+        print('relation', osmid, tags, ref)
+
+v = V()
+
+osm_pbf_parser.read_osm_pbf(sys.argv[1], v)
