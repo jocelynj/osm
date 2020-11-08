@@ -212,12 +212,12 @@ class OsmBin:
         self._free = {}
         for nbn in range(2001):
             self._free[nbn] = []
-        f = open(os.path.join(self._folder, "way.free"))
+        f = open(os.path.join(self._folder, "way.free"), "rb")
         while True:
             line = f.readline()
             if not line:
                 break
-            line = line.strip().split(';')
+            line = line.strip().split(b';')
             self._free[int(line[1])].append(int(line[0]))
 
     def _WriteFree(self):
@@ -225,10 +225,10 @@ class OsmBin:
             self._free
         except AttributeError:
             return
-        f = open(os.path.join(self._folder, "way.free"), 'w')
+        f = open(os.path.join(self._folder, "way.free"), 'wb')
         for nbn in self._free:
             for ptr in self._free[nbn]:
-                f.write("%d;%d\n" % (ptr, nbn))
+                f.write(b"%d;%d\n" % (ptr, nbn))
         f.close()
 
     def begin(self):
