@@ -1,0 +1,32 @@
+<VirtualHost *:80 *:443>
+
+        ServerName  download.openstreetmap.fr
+        ServerAlias download.vm.openstreetmap.fr
+
+        DocumentRoot /data/project/osmbin/web
+
+        Alias /replication/ /data/work/osmbin/replication/diffs/
+
+        LogLevel warn
+        ErrorLog /var/log/apache2/download-error.log
+        CustomLog /var/log/apache2/download-access.log combined
+
+        <Directory "/data/project/osmbin/web">
+                Options Indexes FollowSymLinks MultiViews
+                Satisfy any
+                Require all granted
+        </Directory>
+
+        <Directory "/data/work/osmbin/replication/diffs/">
+                Options Indexes FollowSymLinks MultiViews
+                Satisfy any
+                Require all granted
+        </Directory>
+
+        <Directory /data/project/osmbin/web/cgi-bin>
+                Options Indexes FollowSymLinks MultiViews ExecCGI
+                AddHandler cgi-script .py
+        </Directory>
+
+</VirtualHost>
+
