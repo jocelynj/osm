@@ -54,6 +54,15 @@ def init_pbf(dirpath, filenames, options):
   pwd = os.getcwd()
   cmd += ["--read-pbf", orig_pbf]
 
+  orig_state = os.path.join(os.path.dirname(orig_pbf), "state.txt")
+  with open(orig_state) as f:
+    for line in f:
+      (key, sep, value) = line.partition("=")
+      if key.strip() == "timestamp":
+        state_timestamp = value
+      if key.strip() == "sequenceNumber":
+        state_sequencenum = value
+
   osmium_cmd  = [osmium_bin]
   osmium_cmd += ["extract", "--config", osmium_config_file, orig_pbf]
   osmium_config_begin  = '{\n'
@@ -77,8 +86,15 @@ def init_pbf(dirpath, filenames, options):
     cmd += ["--tee", "--bounding-polygon", "completeWays=yes", "completeRelations=no", "cascadingRelations=no", "file=%s" % dst_poly]
     cmd += ["--write-pbf", dst_pbf]
 
+    repl_base_url = "http://download.openstreetmap.fr/replication/%s/minute" % os.path.join(dirpath, f.split(".")[0])
+
     osmium_config  = '       {\n'
     osmium_config += '           "output": "%s",\n' % dst_pbf
+    osmium_config += '           "output_header": {\n'
+    osmium_config += '                "osmosis_replication_timestamp": "%s",\n' % state_timestamp
+    osmium_config += '                "osmosis_replication_sequence_number": "%s",\n' % state_sequencenum
+    osmium_config += '                "osmosis_replication_base_url": "%s"\n' % repl_base_url
+    osmium_config += '           },\n'
     osmium_config += '           "output_format": "pbf",\n'
     osmium_config += '           "polygon": {\n'
     osmium_config += '               "file_name": "%s",\n' % dst_poly
