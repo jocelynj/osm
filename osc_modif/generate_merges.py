@@ -27,6 +27,7 @@ import sys
 
 # configuration
 osmosis_bin = "/usr/bin/osmosis"
+osmium_bin = "/usr/bin/osmium"
 work_path = "/data/work/osmbin/"
 work_diffs_path = os.path.join(work_path, "replication", "diffs")
 merge_diffs_path = os.path.join(work_diffs_path, "merge")
@@ -77,7 +78,7 @@ def merge(filename):
     f.close()
   except:
     begin_sequence = 0
-  
+
   # get last sequence number
   end_sequence = sys.maxsize
   for d in diff_list:
@@ -117,7 +118,7 @@ def merge_num(dest, diff_list, num):
 
   update_symlink(new_state, os.path.join(merge_diffs_path, dest, type_replicate, "state.txt"))
 
-def merge_pbf(filename):
+def merge_pbf(filename, use_osmium):
   pbf_list = []
   f = open(filename, "r")
   for line in f:
@@ -127,14 +128,38 @@ def merge_pbf(filename):
 
   dest = filename
 
-  cmd = [osmosis_bin]
-  for (n, d) in enumerate(pbf_list):
-    cmd += ["--read-pbf", os.path.join(work_pbfs_path, d, os.path.basename(d) + ".osm.pbf")]
-    if n != 0:
-      cmd += ["--merge", "--buffer"]
+  if use_osmium:
+    cmd = [osmium_bin, "merge", "--overwrite"]
+    for (n, d) in enumerate(pbf_list):
+      cmd += [os.path.join(work_pbfs_path, d, os.path.basename(d) + ".osm.pbf")]
 
-  dest_pbf = os.path.join(merge_pbfs_path, dest, os.path.basename(dest) + ".osm.pbf")
-  cmd += ["--write-pbf", dest_pbf]
+    dest_pbf = os.path.join(merge_pbfs_path, dest, os.path.basename(dest) + ".osm.pbf")
+    cmd += ["-o", dest_pbf]
+
+    orig_state = os.path.join(work_pbfs_path, d, "state.txt")
+    with open(orig_state) as f:
+      for line in f:
+        (key, sep, value) = line.partition("=")
+        if key.strip() == "timestamp":
+          state_timestamp = value.replace("\\:", ":")
+        if key.strip() == "sequenceNumber":
+          state_sequencenum = value
+
+    repl_base_url = "http://download.openstreetmap.fr/replication/%s/minute" % os.path.join("merge", dest)
+
+    cmd += ["--output-header=osmosis_replication_timestamp=%s" % state_timestamp]
+    cmd += ["--output-header=osmosis_replication_sequence_number=%s" % state_sequencenum]
+    cmd += ["--output-header=osmosis_replication_base_url=%s" % repl_base_url]
+
+  else:
+    cmd = [osmosis_bin]
+    for (n, d) in enumerate(pbf_list):
+      cmd += ["--read-pbf", os.path.join(work_pbfs_path, d, os.path.basename(d) + ".osm.pbf")]
+      if n != 0:
+        cmd += ["--merge", "--buffer"]
+
+    dest_pbf = os.path.join(merge_pbfs_path, dest, os.path.basename(dest) + ".osm.pbf")
+    cmd += ["--write-pbf", dest_pbf]
 
   dest_path = os.path.dirname(dest_pbf)
   if not os.path.exists(dest_path):
@@ -148,13 +173,25 @@ def merge_pbf(filename):
 ###########################################################################
 
 if __name__ == '__main__':
+  import argparse
+
+  parser = argparse.ArgumentParser(description="Generate pbf/diff files for merge")
+  parser.add_argument("--osmium", dest="osmium", action="store_true", default=False,
+                      help="Use osmium instead of osmosis")
+  parser.add_argument("--pbf", action="store_true", default=False,
+                      help="Generate pbf files instead of diff")
+  parser.add_argument("--country", dest="country", action="store", nargs="+",
+                      help="Limit to a country")
+  args = parser.parse_args()
+
   countries = None
-  if len(sys.argv) > 1 and sys.argv[1]=="--pbf":
+  if args.pbf:
     pbf = True
-    countries = sys.argv[2:]
   else:
     pbf = False
-    countries = sys.argv[1:]
+
+  if args.country:
+    countries = args.country
 
   os.chdir("merge")
   for (r,d,files) in os.walk("."):
@@ -163,6 +200,6 @@ if __name__ == '__main__':
         continue
       print(f)
       if pbf:
-        merge_pbf(os.path.join(r, f))
+        merge_pbf(os.path.join(r, f), args.osmium)
       else:
         merge(os.path.join(r, f))
