@@ -65,7 +65,7 @@ def get_sequence_num(f):
 
 ###########################################################################
 
-def merge(filename):
+def merge(filename, use_osmium):
 
   # get lock
   if not os.path.exists(work_path):
@@ -104,24 +104,34 @@ def merge(filename):
 
   for i in range(begin_sequence + 1, end_sequence + 1):
     num = "%03d/%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000, i % 1000)
-    merge_num(filename, diff_list, num)
+    merge_num(filename, diff_list, num, use_osmium)
 
   # free lock
   sys.stdout.flush()
   lock.release()
 
 
-def merge_num(dest, diff_list, num):
+def merge_num(dest, diff_list, num, use_osmium):
 
   print(num)
-  cmd = [osmosis_bin]
-  for (n, d) in enumerate(diff_list):
-    cmd += ["--read-xml-change", os.path.join(work_diffs_path, d, type_replicate, num) + ".osc.gz"]
-    if n != 0:
-      cmd += ["--merge-change", "--buffer-change"]
 
-  dest_diff = os.path.join(merge_diffs_path, dest, type_replicate, num) + ".osc.gz"
-  cmd += ["--write-xml-change", dest_diff]
+  if use_osmium:
+    cmd = [osmium_bin, "merge-changes", "--no-progress", "--simplify", "--overwrite"]
+    for (n, d) in enumerate(diff_list):
+      cmd += [os.path.join(work_diffs_path, d, type_replicate, num) + ".osc.gz"]
+
+    dest_diff = os.path.join(merge_diffs_path, dest, type_replicate, num) + ".osc.gz"
+    cmd += ["-o", dest_diff]
+
+  else:
+    cmd = [osmosis_bin]
+    for (n, d) in enumerate(diff_list):
+      cmd += ["--read-xml-change", os.path.join(work_diffs_path, d, type_replicate, num) + ".osc.gz"]
+      if n != 0:
+        cmd += ["--merge-change", "--buffer-change"]
+
+    dest_diff = os.path.join(merge_diffs_path, dest, type_replicate, num) + ".osc.gz"
+    cmd += ["--write-xml-change", dest_diff]
 
   dest_path = os.path.dirname(dest_diff)
   if not os.path.exists(dest_path):
@@ -227,4 +237,4 @@ if __name__ == '__main__':
       if pbf:
         merge_pbf(os.path.join(r, f), args.osmium)
       else:
-        merge(os.path.join(r, f))
+        merge(os.path.join(r, f), args.osmium)
