@@ -20,6 +20,7 @@
 ##                                                                       ##
 ###########################################################################
 
+import lockfile
 import os
 import shutil
 import subprocess
@@ -32,6 +33,7 @@ work_path = "/data/work/osmbin/"
 work_diffs_path = os.path.join(work_path, "replication", "diffs")
 merge_diffs_path = os.path.join(work_diffs_path, "merge")
 type_replicate = "minute"
+lock_file = os.path.join(work_path, "merge.lock")
 
 work_pbfs_path = os.path.join(work_path, "extracts")
 merge_pbfs_path = os.path.join(work_pbfs_path, "merge")
@@ -64,6 +66,13 @@ def get_sequence_num(f):
 ###########################################################################
 
 def merge(filename):
+
+  # get lock
+  if not os.path.exists(work_path):
+    os.makedirs(work_path)
+  lock = lockfile.FileLock(lock_file)
+  lock.acquire(timeout=0)
+
   diff_list = []
   f = open(filename, "r")
   for line in f:
@@ -87,6 +96,7 @@ def merge(filename):
     f.close()
 
   if end_sequence == sys.maxsize:
+    lock.release()
     return
 
   if begin_sequence == 0:
@@ -96,8 +106,13 @@ def merge(filename):
     num = "%03d/%03d/%03d" % (i // (1000 * 1000), (i // 1000) % 1000, i % 1000)
     merge_num(filename, diff_list, num)
 
+  # free lock
+  sys.stdout.flush()
+  lock.release()
+
 
 def merge_num(dest, diff_list, num):
+
   print(num)
   cmd = [osmosis_bin]
   for (n, d) in enumerate(diff_list):
@@ -119,6 +134,13 @@ def merge_num(dest, diff_list, num):
   update_symlink(new_state, os.path.join(merge_diffs_path, dest, type_replicate, "state.txt"))
 
 def merge_pbf(filename, use_osmium):
+
+  # get lock
+  if not os.path.exists(work_path):
+    os.makedirs(work_path)
+  lock = lockfile.FileLock(lock_file)
+  lock.acquire(timeout=0)
+
   pbf_list = []
   f = open(filename, "r")
   for line in f:
@@ -169,6 +191,9 @@ def merge_pbf(filename, use_osmium):
   new_state = os.path.join(merge_pbfs_path, dest, "state.txt")
   shutil.copy2(os.path.join(work_pbfs_path, d, "state.txt"), new_state)
 
+  # free lock
+  sys.stdout.flush()
+  lock.release()
 
 ###########################################################################
 
