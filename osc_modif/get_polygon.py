@@ -18,10 +18,9 @@ def generate_poly(country_name, polygon_id):
   if os.path.exists(out_file):
     return
 
-  if "/" in country_name:
-    dir_name = os.path.join("generated-polygons", os.path.dirname(country_name))
-    if not os.path.exists(dir_name):
-      os.makedirs(dir_name)
+  dir_name = os.path.join("generated-polygons", os.path.dirname(country_name))
+  if not os.path.exists(dir_name):
+    os.makedirs(dir_name)
 
   # generate relation boundary
   r = requests.get(relation_generation_url, params={"id": polygon_id})
