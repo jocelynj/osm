@@ -247,6 +247,8 @@ class OsmBin:
         read = self._fNode_crd.read(8)
         if len(read) != 8:
             return None
+        if _Bytes4ToInt(read[:4]) == 0 and _Bytes4ToInt(read[4:]) == 0:
+            return None
         data["lat"] = _Bytes4ToCoord(read[:4])
         data["lon"] = _Bytes4ToCoord(read[4:])
         data["tag"] = {}
