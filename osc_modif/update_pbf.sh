@@ -22,6 +22,7 @@ exec 1>"$LOGFILE"
 exec 2>"$ERRFILE"
 
 mkdir -p $WORKDIR/tmp
+[ -e "$TARGET_OSM_FILE" ] && rm "$TARGET_OSM_FILE"
 cd $WORKDIR
 
 echo "*** Update $SOURCE_OSM_FILE"
