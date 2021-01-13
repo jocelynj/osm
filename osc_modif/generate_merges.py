@@ -173,9 +173,9 @@ def merge_pbf(filename, use_osmium):
       for line in f:
         (key, sep, value) = line.partition("=")
         if key.strip() == "timestamp":
-          state_timestamp = value.replace("\\:", ":")
+          state_timestamp = value.replace("\\:", ":").strip()
         if key.strip() == "sequenceNumber":
-          state_sequencenum = value
+          state_sequencenum = value.strip()
 
     repl_base_url = "http://download.openstreetmap.fr/replication/%s/minute" % os.path.join("merge", dest)
 

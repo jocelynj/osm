@@ -59,9 +59,9 @@ def init_pbf(dirpath, filenames, options):
     for line in f:
       (key, sep, value) = line.partition("=")
       if key.strip() == "timestamp":
-        state_timestamp = value
+        state_timestamp = value.strip().replace("\\:", ":")
       if key.strip() == "sequenceNumber":
-        state_sequencenum = value
+        state_sequencenum = value.strip()
 
   osmium_cmd  = [osmium_bin]
   osmium_cmd += ["extract", "--config", osmium_config_file, orig_pbf]
