@@ -56,7 +56,7 @@ if __name__ == '__main__':
   parser.add_argument("--file", dest="file", action="store",
                       help="Get list of extracts to generate - format 'name rel_id' per line")
   parser.add_argument("--region", dest="regions", action="store", nargs="+",
-                      help="Get list of regin to generate - rel_id from osmose backend")
+                      help="Get list of region to generate - rel_id from osmose backend")
   args = parser.parse_args()
 
   if args.file:
@@ -66,7 +66,7 @@ if __name__ == '__main__':
         generate_poly(country_name, polygon_id)
 
   if args.regions:
-    sys.path.insert(0, os.path.join(os.path.expanduser("~"), "osmose-backend"))
+    sys.path.insert(0, "osmose-backend")
     import osmose_config
     for region in args.regions:
       for r in osmose_config.config.values():
