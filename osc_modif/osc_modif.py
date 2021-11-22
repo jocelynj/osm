@@ -19,6 +19,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ##                                                                       ##
 ###########################################################################
+## Modified: WK-GiHu osc_modif_102.py
 
 import sys, re, urllib, time
 from modules import OsmSax
@@ -102,7 +103,10 @@ if __name__ == "__main__":
 import unittest
 
 class Test(unittest.TestCase):
-
+    import os
+    rootPath = "tests"
+    outPath = os.path.join(rootPath, "out") 
+    
     def setUp(self):
         import os
         import shutil
@@ -111,8 +115,14 @@ class Test(unittest.TestCase):
         OsmBin.InitFolder("tmp-osmbin/")
         self.osmbin = OsmBin.OsmBin("tmp-osmbin/", "w")
         self.osmbin.Import("tests/000.osm")
-        if not os.path.exists("tests/out"):
-            os.makedirs("tests/out")
+        
+        if not os.path.exists( self.outPath ):
+            os.makedirs( self.outPath )
+        else:
+          from modules.helperLib import remove
+          # remove old <outPath>*.osc files
+          remove( os.path.join(self.outPath, "*.osc") )
+
         del self.osmbin
 
     def tearDown(self):
@@ -122,9 +132,12 @@ class Test(unittest.TestCase):
         del self.osmbin
         shutil.rmtree("tmp-osmbin/")
 
-    def compare_files(self, a, b):
-        import filecmp
-        return filecmp.cmp(a, b)
+    def compare_files(self,fname):
+        import os
+        from modules.helperLib import hash_file
+        return hash_file( os.path.join(self.outPath, fname) ).hexdigest()\
+               == \
+               hash_file( os.path.join("tests/results", fname) ).hexdigest()
 
     def test(self):
         class osc_modif_options:
@@ -136,14 +149,14 @@ class Test(unittest.TestCase):
             osmbin_path = "tmp-osmbin/"
         osc_modif(None, osc_modif_options)
 
-        assert self.compare_files("tests/results/001.bbox.osc", "tests/out/001.bbox.osc")
+        assert self.compare_files("001.bbox.osc")
 
         class osc_modif_options:
-            source = "tests/results/001.bbox.osc"
+            source = "tests/out/001.bbox.osc"
             dest = "tests/out/001.poly.osc"
             poly = "tests/polygon.poly"
             position_only = False
             osmbin_path = "tmp-osmbin/"
         osc_modif(None, osc_modif_options)
 
-        assert self.compare_files("tests/results/001.poly.osc", "tests/out/001.poly.osc")
+        assert self.compare_files("001.poly.osc")
